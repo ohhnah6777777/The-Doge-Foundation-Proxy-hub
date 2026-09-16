@@ -19,6 +19,9 @@
  */
 
 @theme inline {
+  --font-sans: "Geist", sans-serif;
+  --font-display: "Geist", sans-serif;
+  --font-mono: "Geist Mono", monospace;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -59,18 +62,19 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-success: var(--success);
 }
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --background: oklch(0.985 0.004 255);
+  --foreground: oklch(0.16 0.02 260);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.129 0.042 264.695);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
+  --primary: oklch(0.61 0.2 263);
+  --primary-foreground: oklch(0.99 0 0);
   --secondary: oklch(0.968 0.007 247.896);
   --secondary-foreground: oklch(0.208 0.042 265.755);
   --muted: oklch(0.968 0.007 247.896);
@@ -95,17 +99,18 @@
   --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
+  --success: oklch(0.69 0.18 151);
 }
 
 .dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
+  --background: oklch(0.115 0.018 265);
+  --foreground: oklch(0.97 0.006 255);
+  --card: oklch(0.15 0.018 265);
   --card-foreground: oklch(0.984 0.003 247.858);
   --popover: oklch(0.208 0.042 265.755);
   --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
+  --primary: oklch(0.72 0.17 263);
+  --primary-foreground: oklch(0.12 0.02 265);
   --secondary: oklch(0.279 0.041 260.031);
   --secondary-foreground: oklch(0.984 0.003 247.858);
   --muted: oklch(0.279 0.041 260.031);
@@ -114,7 +119,7 @@
   --accent-foreground: oklch(0.984 0.003 247.858);
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(1 0 0 / 10%);
+  --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.551 0.027 264.364);
   --chart-1: oklch(0.488 0.243 264.376);
@@ -130,6 +135,7 @@
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
+  --success: oklch(0.75 0.18 151);
 }
 
 @layer base {
@@ -140,5 +146,22 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
+    letter-spacing: 0;
+    min-width: 320px;
   }
 }
+
+@utility auth-grid {
+  background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(to bottom, black, transparent 86%);
+  opacity: 0.24;
+}
+
+@utility section-label { font-family: var(--font-mono); font-size: 0.6875rem; color: var(--accent); letter-spacing: 0.14em; }
+@utility page-title { margin-top: 0.35rem; font-family: var(--font-display); font-size: clamp(2rem, 6vw, 3.25rem); font-weight: 600; line-height: 1.05; letter-spacing: 0; }
+@utility page-copy { margin-top: 0.75rem; color: var(--muted-foreground); }
+@utility rank-chip { display: inline-flex; align-items: center; gap: 0.5rem; width: fit-content; border: 1px solid color-mix(in oklab, var(--success) 35%, transparent); background: color-mix(in oklab, var(--success) 9%, transparent); color: var(--success); border-radius: var(--radius-md); padding: 0.55rem 0.8rem; font-size: 0.75rem; font-weight: 500; }
+@utility tier-label { border: 1px solid var(--border); border-radius: 999px; padding: 0.15rem 0.45rem; font-family: var(--font-mono); font-size: 0.625rem; color: var(--muted-foreground); text-transform: uppercase; }
+@utility scrollbar-none { scrollbar-width: none; &::-webkit-scrollbar { display: none; } }

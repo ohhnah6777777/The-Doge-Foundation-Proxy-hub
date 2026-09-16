@@ -14,12 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      owner_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
           display_name: string
           google_cloak_enabled: boolean
           id: string
+          onboarded: boolean
+          persona: string
           updated_at: string
         }
         Insert: {
@@ -27,6 +53,8 @@ export type Database = {
           display_name?: string
           google_cloak_enabled?: boolean
           id: string
+          onboarded?: boolean
+          persona?: string
           updated_at?: string
         }
         Update: {
@@ -34,6 +62,8 @@ export type Database = {
           display_name?: string
           google_cloak_enabled?: boolean
           id?: string
+          onboarded?: boolean
+          persona?: string
           updated_at?: string
         }
         Relationships: []

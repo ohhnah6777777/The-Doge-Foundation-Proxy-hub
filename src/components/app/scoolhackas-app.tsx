@@ -17,12 +17,20 @@ const PROXY_TIER = 2;
 const CONTACT_TIER = 4;
 
 const quests = [
-  { id: "bookmarklet", tier: 0, title: "Create your first hack bookmarklet", xp: 100, seconds: 20 },
-  { id: "cloak", tier: 1, title: "Deploy your first cloak panel", xp: 180, seconds: 45 },
-  { id: "blooket", tier: 2, title: "Hack your first Blooket game", xp: 300, seconds: 120 },
-  { id: "handshake", tier: 3, title: "Initialize a proxy handshake", xp: 420, seconds: 75 },
-  { id: "omega", tier: 4, title: "Complete an omega systems check", xp: 600, seconds: 90 },
+  { id: "bookmarklet", tier: 0, title: "Create your first hack bookmarklet", xp: 100, seconds: 20,
+    urls: ["https://github.com/sparemind/AutoClickerBookmarklet", "https://github.com/TacocatDev01/Edit-Page-Bookmarklet"] },
+  { id: "cloak", tier: 1, title: "Deploy your first cloak panel", xp: 180, seconds: 45,
+    urls: ["https://www.google.com/"] },
+  { id: "blooket", tier: 2, title: "Hack your first Blooket game", xp: 300, seconds: 120,
+    urls: ["https://www.blooket.com/"] },
+  { id: "handshake", tier: 3, title: "Initialize a proxy handshake", xp: 420, seconds: 75,
+    urls: ["https://home.kasihinfo.com/", "https://try.deepee.com/"] },
+  { id: "omega", tier: 4, title: "Complete an omega systems check", xp: 600, seconds: 90,
+    urls: ["https://bout.awiki.org/search.html", "https://platform.geometrylesson.com/"] },
 ] as const;
+
+const RESET_LIMIT = 5;
+const RESET_WINDOW_MS = 6 * 60 * 60 * 1000;
 
 type HackEntry = { id: string; name: string; description: string; url: string; steps: string[]; image?: string };
 const hackLibrary: { tier: number; title: string; hacks: HackEntry[] }[] = [
@@ -138,7 +146,7 @@ function levelForXp(xp: number) { return Math.floor(xp / 500) + 1; }
 function tierForLevel(level: number) { return Math.max(0, ranks.findIndex((rank) => level >= rank.min && level <= rank.max)); }
 function formatTime(total: number) { return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`; }
 
-type Run = { questId: string; phase: "confirming" | "counting" | "ready"; remaining: number };
+type Run = { questId: string; phase: "confirming" | "counting" | "ready"; remaining: number; url: string };
 
 export function ScoolhackasApp() {
   const navigate = useNavigate();
@@ -155,6 +163,7 @@ export function ScoolhackasApp() {
   const [onboarding, setOnboarding] = useState(false);
   const [levelUp, setLevelUp] = useState<string | null>(null);
   const [devMode, setDevMode] = useState(false);
+  const [resets, setResets] = useState<{ used: number; since: number }>({ used: 0, since: Date.now() });
 
   const level = levelForXp(xp);
   const baseTier = tierForLevel(level);
@@ -166,6 +175,9 @@ export function ScoolhackasApp() {
     const stored = JSON.parse(localStorage.getItem("scoolhackas-progress") ?? "null") as { xp?: number; completed?: string[] } | null;
     if (stored) { setXp(stored.xp ?? 0); setCompleted(stored.completed ?? []); }
     setDevMode(localStorage.getItem("scoolhackas-dev") === "on");
+    const storedResets = JSON.parse(localStorage.getItem("scoolhackas-resets") ?? "null") as { used?: number; since?: number } | null;
+    if (storedResets?.since && Date.now() - storedResets.since < RESET_WINDOW_MS) setResets({ used: storedResets.used ?? 0, since: storedResets.since });
+    else setResets({ used: 0, since: Date.now() });
     const storedTheme = localStorage.getItem("scoolhackas-theme") === "light" ? "light" : "dark";
     setTheme(storedTheme); document.documentElement.classList.toggle("dark", storedTheme === "dark");
     void (async () => {
@@ -186,6 +198,7 @@ export function ScoolhackasApp() {
     })();
   }, []);
 
+  useEffect(() => { localStorage.setItem("scoolhackas-resets", JSON.stringify(resets)); }, [resets]);
   useEffect(() => { localStorage.setItem("scoolhackas-dev", devMode ? "on" : "off"); }, [devMode]);
   useEffect(() => { localStorage.setItem("scoolhackas-progress", JSON.stringify({ xp, completed })); }, [xp, completed]);
   useEffect(() => {
@@ -228,8 +241,9 @@ export function ScoolhackasApp() {
   const startQuest = (questId: string, seconds: number) => {
     const quest = quests.find((item) => item.id === questId);
     if (!quest || quest.tier > tier || completed.includes(questId)) return;
-    if (questId === "blooket") window.open("about:blank", "_blank", "noopener,noreferrer");
-    setRun({ questId, phase: "confirming", remaining: devMode ? 3 : seconds });
+    const url = quest.urls[Math.floor(Math.random() * quest.urls.length)] ?? quest.urls[0]!;
+    window.open(url, "_blank", "noopener,noreferrer");
+    setRun({ questId, phase: "confirming", remaining: devMode ? 3 : seconds, url });
   };
   const claimRun = () => {
     if (!run) return;
@@ -237,7 +251,15 @@ export function ScoolhackasApp() {
     if (quest) grant(quest.id, quest.xp);
     setRun(null);
   };
-  const refreshQuests = () => { setRun(null); setConfirmExit(false); };
+  const resetsLeft = Date.now() - resets.since >= RESET_WINDOW_MS ? RESET_LIMIT : RESET_LIMIT - resets.used;
+  const resetsAt = resets.since + RESET_WINDOW_MS;
+  const refreshQuests = () => {
+    const fresh = Date.now() - resets.since >= RESET_WINDOW_MS;
+    const used = fresh ? 0 : resets.used;
+    if (used >= RESET_LIMIT) return;
+    setResets({ used: used + 1, since: fresh ? Date.now() : resets.since });
+    setRun(null); setConfirmExit(false); setCompleted([]);
+  };
 
   const saveProfile = async () => {
     if (!profile.id) return;
@@ -278,7 +300,7 @@ export function ScoolhackasApp() {
     </header>
 
     <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
-      {tab === "Home" && <HomePanel xp={xp} level={level} levelXp={levelXp} rank={rank.name} tier={tier} completed={completed} run={run} startQuest={startQuest} refreshQuests={refreshQuests} />}
+      {tab === "Home" && <HomePanel xp={xp} level={level} levelXp={levelXp} rank={rank.name} tier={tier} completed={completed} run={run} startQuest={startQuest} refreshQuests={refreshQuests} resetsLeft={resetsLeft} resetsAt={resetsAt} />}
       {tab === "Hacks" && <HacksPanel tier={tier} />}
       {tab === "Proxy" && (tier < PROXY_TIER
         ? <LockedPanel eyebrow="PROXY / UTILITIES" title="Proxy" requirement={`Reach ${TIER_NAMES[PROXY_TIER]} rank (level ${ranks[PROXY_TIER]?.min}) to open the proxy panel.`} />
@@ -307,6 +329,7 @@ function QuestOverlay({ title, xpReward, run, confirmExit, askExit, cancelExit, 
     <div className="w-full max-w-md rounded-lg border border-border bg-card p-8 text-center">
       <p className="section-label">QUEST IN PROGRESS</p>
       <h2 className="mt-2 text-xl font-semibold">{title}</h2>
+      <a href={run.url} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"><Link2 className="size-3" />{run.url}</a>
       {run.phase === "confirming" && <p className="mt-8 animate-pulse font-mono text-sm text-accent">waiting for hack confirmation…</p>}
       {run.phase === "counting" && <>
         <div className="mt-8 flex items-center justify-center gap-3 font-mono text-4xl"><Clock3 className="size-6 animate-pulse text-accent" />{formatTime(run.remaining)}</div>
@@ -352,13 +375,13 @@ function OnboardingOverlay({ theme, finish }: { theme: "dark" | "light"; finish:
   </div>;
 }
 
-function HomePanel({ xp, level, levelXp, rank, tier, completed, run, startQuest, refreshQuests }: { xp:number; level:number; levelXp:number; rank:string; tier:number; completed:string[]; run:Run|null; startQuest:(id:string, seconds:number)=>void; refreshQuests:()=>void }) {
+function HomePanel({ xp, level, levelXp, rank, tier, completed, run, startQuest, refreshQuests, resetsLeft, resetsAt }: { xp:number; level:number; levelXp:number; rank:string; tier:number; completed:string[]; run:Run|null; startQuest:(id:string, seconds:number)=>void; refreshQuests:()=>void; resetsLeft:number; resetsAt:number }) {
   return <div className="animate-in fade-in duration-500">
     <div className="mb-10 flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="section-label">COMMAND CENTER</p><h1 className="page-title">Good evening, hacka.</h1><p className="page-copy">Keep moving. Every quest gets you closer to the next rank.</p></div><div className="rank-chip"><ShieldCheck className="size-4" />{rank}</div></div>
     <section className="mb-12 border-y border-border py-8">
       <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end"><div><div className="mb-4 flex items-end justify-between"><div><span className="text-sm text-muted-foreground">Current level</span><div className="mt-1 font-display text-5xl font-semibold">{level.toString().padStart(2,"0")}</div></div><div className="text-right"><span className="font-mono text-sm text-foreground">{levelXp} / 500 XP</span><p className="mt-1 text-xs text-muted-foreground">to level {level + 1}</p></div></div><div className="h-2 overflow-hidden rounded-full bg-secondary"><div className="h-full rounded-full bg-primary transition-all duration-700" style={{ width: `${(levelXp / 500) * 100}%` }} /></div></div><div className="grid grid-cols-2 gap-px overflow-hidden rounded-md border border-border bg-border"><Stat label="TOTAL XP" value={xp.toLocaleString()} /><Stat label="QUESTS DONE" value={`${completed.length}/${quests.length}`} /></div></div>
     </section>
-    <div className="mb-5 flex items-center justify-between gap-4"><div><p className="section-label">ACTIVE QUEUE</p><h2 className="mt-1 text-xl font-semibold">Rank quests</h2></div><div className="flex items-center gap-3"><p className="hidden text-xs text-muted-foreground sm:block">{quests.length - completed.length} remaining</p><Button variant="outline" size="sm" onClick={refreshQuests}><RotateCw /> Refresh</Button></div></div>
+    <div className="mb-5 flex items-center justify-between gap-4"><div><p className="section-label">ACTIVE QUEUE</p><h2 className="mt-1 text-xl font-semibold">Rank quests</h2></div><div className="flex items-center gap-3"><p className="hidden text-xs text-muted-foreground sm:block">{quests.length - completed.length} remaining</p><div className="text-right"><Button variant="outline" size="sm" disabled={resetsLeft <= 0} onClick={refreshQuests}><RotateCw /> Refresh ({Math.max(0, resetsLeft)})</Button><p className="mt-1 text-[11px] text-muted-foreground">{resetsLeft > 0 ? `${resetsLeft} of ${RESET_LIMIT} resets left` : `Resets back at ${new Date(resetsAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`}</p></div></div></div>
     <div className="divide-y divide-border border-y border-border">{quests.map((quest, index) => {
       const done = completed.includes(quest.id);
       const locked = quest.tier > tier;

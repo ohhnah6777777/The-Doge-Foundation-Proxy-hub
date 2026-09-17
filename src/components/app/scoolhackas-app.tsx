@@ -575,26 +575,56 @@ function OnboardingOverlay({ theme, finish }: { theme: "dark" | "light"; finish:
   </div>;
 }
 
-function HomePanel({ xp, level, levelXp, rank, tier, completed, run, startQuest, refreshQuests, resetsLeft, resetsAt }: { xp:number; level:number; levelXp:number; rank:string; tier:number; completed:string[]; run:Run|null; startQuest:(id:string, seconds:number)=>void; refreshQuests:()=>void; resetsLeft:number; resetsAt:number }) {
+const trending = [
+  { id: "autoclicker", name: "Auto clicker bookmarklet", tier: 0, heat: "hot", note: "Most saved hack this week — idle games on autopilot." },
+  { id: "historyflood", name: "History flooder", tier: 1, heat: "rising", note: "Buries the back button under hundreds of entries." },
+  { id: "rainbowpage", name: "Rainbow page", tier: 1, heat: "rising", note: "One click turns any page into a colour cycle." },
+  { id: "space", name: "Space proxy", tier: 2, heat: "hot", note: "Games plus a proxy that actually loads. Start here." },
+];
+
+function HomePanel({ xp, level, levelXp, levelNeed, rank, tier, quests, completed, run, startQuest, refreshQuests, resetsLeft, resetsAt, onOpenHacks }: { xp:number; level:number; levelXp:number; levelNeed:number; rank:string; tier:number; quests:QuestDef[]; completed:string[]; run:Run|null; startQuest:(id:string, seconds:number)=>void; refreshQuests:()=>void; resetsLeft:number; resetsAt:number; onOpenHacks:()=>void }) {
+  const doneHere = quests.filter((quest) => completed.includes(quest.id)).length;
   return <div className="animate-in fade-in duration-500">
     <div className="mb-10 flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="section-label">COMMAND CENTER</p><h1 className="page-title">Good evening, hacka.</h1><p className="page-copy">Keep moving. Every quest gets you closer to the next rank.</p></div><div className="rank-chip"><ShieldCheck className="size-4" />{rank}</div></div>
     <section className="mb-12 border-y border-border py-8">
-      <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end"><div><div className="mb-4 flex items-end justify-between"><div><span className="text-sm text-muted-foreground">Current level</span><div className="mt-1 font-display text-5xl font-semibold">{level.toString().padStart(2,"0")}</div></div><div className="text-right"><span className="font-mono text-sm text-foreground">{levelXp} / 500 XP</span><p className="mt-1 text-xs text-muted-foreground">to level {level + 1}</p></div></div><div className="h-2 overflow-hidden rounded-full bg-secondary"><div className="h-full rounded-full bg-primary transition-all duration-700" style={{ width: `${(levelXp / 500) * 100}%` }} /></div></div><div className="grid grid-cols-2 gap-px overflow-hidden rounded-md border border-border bg-border"><Stat label="TOTAL XP" value={xp.toLocaleString()} /><Stat label="QUESTS DONE" value={`${completed.length}/${quests.length}`} /></div></div>
+      <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end"><div><div className="mb-4 flex items-end justify-between"><div><span className="text-sm text-muted-foreground">Current level</span><div className="mt-1 font-display text-5xl font-semibold">{level.toString().padStart(2,"0")}</div></div><div className="text-right"><span className="font-mono text-sm text-foreground">{levelXp} / {levelNeed} XP</span><p className="mt-1 text-xs text-muted-foreground">to level {level + 1}</p></div></div><div className="h-2 overflow-hidden rounded-full bg-secondary"><div className="h-full rounded-full bg-primary transition-all duration-700" style={{ width: `${Math.min(100, (levelXp / levelNeed) * 100)}%` }} /></div></div><div className="grid grid-cols-2 gap-px overflow-hidden rounded-md border border-border bg-border"><Stat label="TOTAL XP" value={xp.toLocaleString()} /><Stat label="QUESTS DONE" value={`${doneHere}/${quests.length}`} /></div></div>
     </section>
-    <div className="mb-5 flex items-center justify-between gap-4"><div><p className="section-label">ACTIVE QUEUE</p><h2 className="mt-1 text-xl font-semibold">Rank quests</h2></div><div className="flex items-center gap-3"><p className="hidden text-xs text-muted-foreground sm:block">{quests.length - completed.length} remaining</p><div className="text-right"><Button variant="outline" size="sm" disabled={resetsLeft <= 0} onClick={refreshQuests}><RotateCw /> Refresh ({Math.max(0, resetsLeft)})</Button><p className="mt-1 text-[11px] text-muted-foreground">{resetsLeft > 0 ? `${resetsLeft} of ${RESET_LIMIT} resets left` : `Resets back at ${new Date(resetsAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`}</p></div></div></div>
-    <div className="divide-y divide-border border-y border-border">{quests.map((quest, index) => {
+
+    <section className="mb-12">
+      <div className="mb-5 flex items-center justify-between gap-4"><div><p className="section-label">RIGHT NOW</p><h2 className="mt-1 flex items-center gap-2 text-xl font-semibold"><TrendingUp className="size-5 text-accent" /> Trending hacks</h2></div><Button variant="ghost" size="sm" onClick={onOpenHacks}>Browse all</Button></div>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{trending.map((item) => {
+        const locked = item.tier > tier;
+        return <button key={item.id} type="button" onClick={onOpenHacks} className="group rounded-lg border border-border bg-card/50 p-4 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-foreground/25 hover:bg-card">
+          <div className="mb-3 flex items-center justify-between"><span className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wide ${item.heat === "hot" ? "border-accent/40 text-accent" : "border-border text-muted-foreground"}`}>{item.heat === "hot" ? <Flame className="size-3" /> : <TrendingUp className="size-3" />}{item.heat}</span>{locked && <LockKeyhole className="size-3.5 text-muted-foreground" />}</div>
+          <h3 className="text-sm font-medium">{item.name}</h3>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{locked ? `Unlocks at ${TIER_NAMES[item.tier]} rank.` : item.note}</p>
+        </button>;
+      })}</div>
+    </section>
+
+    <div className="mb-5 flex items-center justify-between gap-4"><div><p className="section-label">ACTIVE QUEUE</p><h2 className="mt-1 text-xl font-semibold">{TIER_NAMES[tier]} quests</h2></div><div className="flex items-center gap-3"><p className="hidden text-xs text-muted-foreground sm:block">{quests.length - doneHere} remaining</p><div className="text-right"><Button variant="outline" size="sm" disabled={resetsLeft <= 0} onClick={refreshQuests}><RotateCw /> Refresh ({Math.max(0, resetsLeft)})</Button><p className="mt-1 text-[11px] text-muted-foreground">{resetsLeft > 0 ? `${resetsLeft} of ${RESET_LIMIT} resets left` : `Resets back at ${new Date(resetsAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`}</p></div></div></div>
+    <div className="grid gap-3 lg:grid-cols-2">{quests.map((quest, index) => {
       const done = completed.includes(quest.id);
       const locked = quest.tier > tier;
       const active = run?.questId === quest.id;
-      return <div key={quest.id} className={`grid gap-4 py-5 sm:grid-cols-[40px_1fr_auto] sm:items-center ${locked ? "opacity-60" : ""}`}>
-        <div className={`grid size-10 place-items-center rounded-md border ${done ? "border-success/40 bg-success/10 text-success" : "border-border bg-secondary text-muted-foreground"}`}>{done ? <Check className="size-4" /> : locked ? <LockKeyhole className="size-4" /> : <span className="font-mono text-xs">0{index+1}</span>}</div>
-        <div>
-          <div className="mb-1 flex flex-wrap items-center gap-2"><h3 className="font-medium">{quest.title}</h3><span className="tier-label">{TIER_NAMES[quest.tier]}</span></div>
-          <p className="text-sm text-muted-foreground">{done ? "Quest complete" : locked ? `Locked — reach ${TIER_NAMES[quest.tier]} rank (level ${ranks[quest.tier]?.min}) to attempt this.` : active ? "Running…" : `Earn ${quest.xp} XP`}</p>
+      return <div key={quest.id} className={`group relative overflow-hidden rounded-lg border p-5 transition-all duration-300 ${done ? "border-success/30 bg-success/5" : active ? "border-primary/50 bg-primary/5" : "border-border bg-card/40 hover:-translate-y-0.5 hover:border-foreground/25 hover:bg-card"} ${locked ? "opacity-60" : ""}`}>
+        <div className="flex items-start gap-4">
+          <div className={`grid size-11 shrink-0 place-items-center rounded-md border ${done ? "border-success/40 bg-success/10 text-success" : active ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-secondary text-muted-foreground"}`}>{done ? <Check className="size-4" /> : locked ? <LockKeyhole className="size-4" /> : <Zap className="size-4" />}</div>
+          <div className="min-w-0 flex-1">
+            <div className="mb-1 flex flex-wrap items-center gap-2"><span className="font-mono text-[11px] text-muted-foreground">Q{String(index + 1).padStart(2, "0")}</span><h3 className="font-medium">{quest.title}</h3></div>
+            <p className="text-sm leading-relaxed text-muted-foreground">{locked ? `Locked — reach ${TIER_NAMES[quest.tier]} rank (level ${ranks[quest.tier]?.min}) to attempt this.` : quest.detail}</p>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <span className="flex items-center gap-1 rounded-full border border-accent/40 px-2.5 py-0.5 font-mono text-[11px] text-accent"><Sparkles className="size-3" /> +{quest.xp} XP</span>
+              <span className="flex items-center gap-1 rounded-full border border-border px-2.5 py-0.5 font-mono text-[11px] text-muted-foreground"><Clock3 className="size-3" /> {formatTime(quest.seconds)}</span>
+              <span className="tier-label">{TIER_NAMES[quest.tier]}</span>
+              <div className="ml-auto">
+                {done ? <span className="font-mono text-xs text-success">Complete</span>
+                  : locked ? <span className="flex items-center gap-2 text-xs text-muted-foreground"><LockKeyhole className="size-3" /> Locked</span>
+                  : <Button size="sm" variant={active ? "default" : "outline"} disabled={!!run} onClick={()=>startQuest(quest.id, quest.seconds)}>{active ? "Running…" : "Go"} <Play /></Button>}
+              </div>
+            </div>
+          </div>
         </div>
-        {done ? <span className="font-mono text-xs text-success">+{quest.xp} XP</span>
-          : locked ? <span className="flex items-center gap-2 text-xs text-muted-foreground"><LockKeyhole className="size-3" /> Locked</span>
-          : <Button size="sm" variant="outline" disabled={!!run} onClick={()=>startQuest(quest.id, quest.seconds)}>Go <Play /></Button>}
       </div>;
     })}</div>
   </div>;

@@ -475,13 +475,13 @@ export function ScoolhackasApp() {
     if (profile.id) await supabase.from("profiles").update({ persona, onboarded: true }).eq("id", profile.id);
   };
   const setXpValue = (value: number) => setXp(Math.max(0, Math.round(value)));
-  const jumpToTier = (target: number) => { const min = ranks[target]?.min ?? 1; setXp((min - 1) * 500); };
+  const jumpToTier = (target: number) => { const min = ranks[target]?.min ?? 1; setXp(totalXpForLevel(min)); };
   const resetProgress = () => { setXp(0); setCompleted([]); setRun(null); };
-  const completeAllQuests = () => { setCompleted(quests.map((item) => item.id)); };
+  const completeAllQuests = () => { setCompleted(rankQuests.map((item) => item.id)); };
 
   const signOut = async () => { await supabase.auth.signOut(); await navigate({ to: "/auth", replace: true }); };
 
-  const activeQuest = useMemo(() => quests.find((item) => item.id === run?.questId) ?? null, [run?.questId]);
+  const activeQuest = useMemo(() => allQuests.find((item) => item.id === run?.questId) ?? null, [run?.questId]);
 
   return <div className="min-h-screen bg-background text-foreground">
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">

@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Award, Bookmark, Braces, Check, CircleUserRound, Clock3, Code2, House, Link2, LockKeyhole, LogOut, Mail, Moon, Network, Orbit, Pencil, Play, RotateCw, Send, ShieldCheck, Sliders, Sparkles, Sun, UserRound, X } from "lucide-react";
+import { Award, Bookmark, Braces, Check, CircleUserRound, Clock3, Code2, Copy, Flame, House, Link2, LockKeyhole, LogOut, Mail, Moon, Network, Orbit, Pencil, Play, RotateCw, Send, ShieldCheck, Sliders, Sparkles, Sun, TrendingUp, UserRound, X, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
+import { bubbleLetters, calculator, drawOnScreen, historyFlooder, rainbowPage } from "@/lib/hack-scripts";
 import autoclickerIcon from "@/assets/hack-autoclicker.png";
+import historyIcon from "@/assets/hack-history-water.png";
 
 const ranks = [
   { name: "Beginner hacka", min: 1, max: 5 }, { name: "Intermediate hacka", min: 6, max: 12 },

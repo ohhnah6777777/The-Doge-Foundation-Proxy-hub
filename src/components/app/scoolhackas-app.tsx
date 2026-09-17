@@ -16,21 +16,140 @@ const TIER_NAMES = ["Beginner", "Intermediate", "Pro", "Alpha", "Omega", "The Ha
 const PROXY_TIER = 2;
 const CONTACT_TIER = 4;
 
-const quests = [
-  { id: "bookmarklet", tier: 0, title: "Create your first hack bookmarklet", xp: 100, seconds: 20,
-    urls: ["https://github.com/sparemind/AutoClickerBookmarklet", "https://github.com/TacocatDev01/Edit-Page-Bookmarklet"] },
-  { id: "cloak", tier: 1, title: "Deploy your first cloak panel", xp: 180, seconds: 45,
-    urls: ["https://www.google.com/"] },
-  { id: "blooket", tier: 2, title: "Hack your first Blooket game", xp: 300, seconds: 120,
-    urls: ["https://www.blooket.com/"] },
-  { id: "handshake", tier: 3, title: "Initialize a proxy handshake", xp: 420, seconds: 75,
-    urls: ["https://home.kasihinfo.com/", "https://try.deepee.com/"] },
-  { id: "omega", tier: 4, title: "Complete an omega systems check", xp: 600, seconds: 90,
-    urls: ["https://bout.awiki.org/search.html", "https://platform.geometrylesson.com/"] },
-] as const;
+type QuestDef = { id: string; tier: number; title: string; detail: string; xp: number; seconds: number; urls: string[] };
+
+const questSpecs: { xp: number; seconds: number; urls: string[]; items: [string, string][] }[] = [
+  { xp: 100, seconds: 20, urls: ["https://github.com/sparemind/AutoClickerBookmarklet", "https://github.com/TacocatDev01/Edit-Page-Bookmarklet"], items: [
+    ["Create your first hack bookmarklet", "Save a script to your bookmarks bar and fire it once."],
+    ["Run the auto clicker on any page", "Load the clicker and let it run for a few seconds."],
+    ["Make a page editable", "Use the edit page script and rewrite a headline."],
+    ["Name your bookmarklet folder", "Group your scripts in a folder called hacks."],
+    ["Show your bookmarks bar", "Ctrl/Cmd + Shift + B, then keep it visible."],
+    ["Copy a raw script from GitHub", "Grab the raw code, not the rendered page."],
+    ["Test a script on a blank tab", "Confirm it runs without breaking the page."],
+    ["Bookmark two scripts in a row", "Build the habit of stacking your toolkit."],
+    ["Read a script before running it", "Skim the code and find what it actually does."],
+    ["Break a page, then refresh it", "Learn that a reload undoes any local edit."],
+    ["Rename a script for quick access", "Short names are faster to find mid-class."],
+    ["Pin your hacks folder", "Keep the folder first on the bar."],
+    ["Try a script on a school site", "See which pages allow bookmarklets."],
+    ["Share a script with a friend", "Send them the source link, not a screenshot."],
+    ["Finish beginner orientation", "Wrap the starter track and move up."],
+  ] },
+  { xp: 180, seconds: 45, urls: ["https://github.com/TacocatDev01/Edit-Page-Bookmarklet", "https://www.google.com/"], items: [
+    ["Deploy your first cloak panel", "Turn the tab disguise on and check the title."],
+    ["Flood your history 50 times", "Run the history flooder and confirm the alert."],
+    ["Turn a page into bubble letters", "Fire the bubble font script on a text-heavy page."],
+    ["Draw on a live page", "Use the draw script and change pen size."],
+    ["Make a page rainbow", "Toggle the hue-rotate script on and off."],
+    ["Solve something with the calculator", "Run the calculator script and use an equation."],
+    ["Chain two scripts together", "Run the rainbow and the draw script at once."],
+    ["Cloak, then uncloak", "Confirm the favicon swaps both ways."],
+    ["Edit and screenshot a page", "Make a harmless edit and capture it."],
+    ["Build a three-script toolkit", "Keep your best three on the bar."],
+    ["Clear a flooded history", "Learn how to clean up after the flooder."],
+    ["Change the pen colour mid-draw", "Press c and pick a new colour."],
+    ["Run a script on a locked-down site", "Find out where bookmarklets get blocked."],
+    ["Teach a friend the cloak", "Walk someone through the disguise toggle."],
+    ["Finish the intermediate track", "Close out tier two and push to Pro."],
+  ] },
+  { xp: 300, seconds: 90, urls: ["https://www.blooket.com/", "https://dashboard.blooket.com/"], items: [
+    ["Hack your first Blooket game", "Join a live game and run a script on it."],
+    ["Make 3 bookmarklets in one sitting", "Build a proper Pro-tier toolkit."],
+    ["Farm tokens in Blooket", "Run a full solo round with a script loaded."],
+    ["Join a game with a spoofed name", "Enter with a custom display name."],
+    ["Auto-answer a full round", "Let the script pick every answer."],
+    ["Run a half proxy session", "Open a proxy and browse for a minute."],
+    ["Unlock 25% of the game list", "Try five different game sites."],
+    ["Test a script across two browsers", "Confirm it works outside Chrome."],
+    ["Flood a lobby with names", "Join a test lobby several times."],
+    ["Beat your own high score", "Score higher than your last run."],
+    ["Read a Blooket script's source", "Understand what it sends to the server."],
+    ["Fix a script that stopped working", "Patch a broken selector yourself."],
+    ["Build a launcher page", "Collect your scripts on one local page."],
+    ["Run a script in a proxy tab", "Get a bookmarklet working inside a proxy."],
+    ["Finish the Pro track", "Clear tier three and aim for Alpha."],
+  ] },
+  { xp: 420, seconds: 75, urls: ["https://kahoot.it/", "https://www.blooket.com/"], items: [
+    ["Initialize a proxy handshake", "Open a proxy and confirm the tunnel loads."],
+    ["Run a Kahoot answer script", "Join a Kahoot and load the helper."],
+    ["Flood a Kahoot lobby", "Send several bots into a test game."],
+    ["Full Blooket hack run", "Use the complete hack set in one game."],
+    ["Spoof a Kahoot nickname", "Get past the nickname filter."],
+    ["Run two hacks in parallel", "Blooket and Kahoot in separate tabs."],
+    ["Map a game's network calls", "Watch the requests in dev tools."],
+    ["Beat a timed Kahoot round", "Finish first with the script running."],
+    ["Build an Alpha script folder", "Organise every script you own."],
+    ["Test a hack against a patch", "Find out what the site fixed."],
+    ["Recover from a kicked session", "Rejoin after being removed."],
+    ["Run a proxy inside a proxy", "Stack two tunnels and see what breaks."],
+    ["Write your own one-liner", "Make a tiny script of your own."],
+    ["Document your setup", "Write down what you run and why."],
+    ["Finish the Alpha track", "Clear tier four and head for Omega."],
+  ] },
+  { xp: 600, seconds: 90, urls: ["https://bout.awiki.org/search.html", "https://platform.geometrylesson.com/", "https://home.kasihinfo.com/"], items: [
+    ["Complete an omega systems check", "Run a full pass over every tool you own."],
+    ["Unlock 75% of the game list", "Work through most of the game hubs."],
+    ["Run every Kahoot hack once", "Full coverage on the Kahoot set."],
+    ["Run every Blooket hack once", "Full coverage on the Blooket set."],
+    ["Test 75% of the proxies", "Confirm which links still resolve."],
+    ["Find a dead proxy and report it", "Message the owner with the broken link."],
+    ["Chain a proxy to a game hub", "Reach a blocked game through a tunnel."],
+    ["Benchmark two proxies", "Compare load times side by side."],
+    ["Build an omega launcher", "One page, every link you use."],
+    ["Break and repair a script", "Deliberately break it, then fix it."],
+    ["Run a stealth session", "Cloak on, no traces left behind."],
+    ["Mirror a hack to a backup link", "Keep a second copy that still works."],
+    ["Stress test a proxy", "Load something heavy through it."],
+    ["Mentor a lower rank", "Walk someone through their first script."],
+    ["Finish the Omega track", "Clear tier five and approach The Hacka."],
+  ] },
+  { xp: 800, seconds: 120, urls: ["https://bout.awiki.org/search.html", "https://home.kasihinfo.com/", "https://www.blooket.com/"], items: [
+    ["Full access sweep", "Touch every unlocked panel in one session."],
+    ["Audit the entire hack library", "Check every script still runs."],
+    ["Audit every proxy link", "Verify all mains and alternates."],
+    ["Write a hack of your own", "Ship something nobody else has."],
+    ["Publish your script source", "Put it somewhere others can copy."],
+    ["Run a full Kahoot takeover", "Every Kahoot tool at once."],
+    ["Run a full Blooket takeover", "Every Blooket tool at once."],
+    ["Rebuild a patched hack", "Bring a dead script back to life."],
+    ["Host a private launcher", "Your own page, your own links."],
+    ["Beat every game hub once", "One win on each hub you can reach."],
+    ["Message the owner", "Use the direct line on the contact page."],
+    ["Train two new hackas", "Get two people to Intermediate."],
+    ["Keep a zero-trace session", "Cloaked, flooded, cleaned."],
+    ["Find the secret vault", "Locate what stays locked, even here."],
+    ["Complete the Hacka trial", "The last one. Finish it."],
+  ] },
+];
+
+const questPool: QuestDef[][] = questSpecs.map((spec, tier) =>
+  spec.items.map(([title, detail], index) => ({
+    id: `t${tier}q${index}`, tier, title, detail,
+    xp: spec.xp + index * 10, seconds: Math.max(15, spec.seconds + (index % 4) * 10), urls: spec.urls,
+  })),
+);
+const allQuests: QuestDef[] = questPool.flat();
+const QUESTS_SHOWN = 5;
+
+function pickQuests(tier: number, seed: number) {
+  const pool = questPool[Math.min(tier, questPool.length - 1)] ?? [];
+  const scored = pool.map((quest, index) => ({ quest, key: Math.sin((index + 1) * 9301 + seed * 49297) }));
+  scored.sort((a, b) => a.key - b.key);
+  return scored.slice(0, QUESTS_SHOWN).map((item) => item.quest);
+}
+
+function xpForLevel(level: number) { return 300 + (level - 1) * 90; }
+function levelInfo(xp: number) {
+  let level = 1; let remaining = xp;
+  while (remaining >= xpForLevel(level)) { remaining -= xpForLevel(level); level += 1; }
+  return { level, into: remaining, need: xpForLevel(level) };
+}
+function totalXpForLevel(target: number) { let sum = 0; for (let l = 1; l < target; l += 1) sum += xpForLevel(l); return sum; }
 
 const RESET_LIMIT = 5;
 const RESET_WINDOW_MS = 6 * 60 * 60 * 1000;
+
 
 type HackEntry = { id: string; name: string; description: string; url: string; steps: string[]; image?: string };
 const hackLibrary: { tier: number; title: string; hacks: HackEntry[] }[] = [

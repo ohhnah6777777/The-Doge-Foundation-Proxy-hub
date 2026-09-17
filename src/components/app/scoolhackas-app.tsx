@@ -361,12 +361,13 @@ export function ScoolhackasApp() {
   const [levelUp, setLevelUp] = useState<string | null>(null);
   const [devMode, setDevMode] = useState(false);
   const [resets, setResets] = useState<{ used: number; since: number }>({ used: 0, since: Date.now() });
+  const [questSeed, setQuestSeed] = useState(1);
 
-  const level = levelForXp(xp);
+  const { level, into: levelXp, need: levelNeed } = levelInfo(xp);
   const baseTier = tierForLevel(level);
   const tier = devMode ? ranks.length - 1 : baseTier;
   const rank = ranks[tier] ?? ranks[0];
-  const levelXp = xp % 500;
+  const rankQuests = useMemo(() => pickQuests(tier, questSeed), [tier, questSeed]);
 
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem("scoolhackas-progress") ?? "null") as { xp?: number; completed?: string[] } | null;

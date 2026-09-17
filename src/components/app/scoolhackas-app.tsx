@@ -151,7 +151,7 @@ const RESET_LIMIT = 5;
 const RESET_WINDOW_MS = 6 * 60 * 60 * 1000;
 
 
-type HackEntry = { id: string; name: string; description: string; url: string; steps: string[]; image?: string };
+type HackEntry = { id: string; name: string; description: string; url?: string; steps: string[]; image?: string; code?: string };
 const hackLibrary: { tier: number; title: string; hacks: HackEntry[] }[] = [
   {
     tier: 0,

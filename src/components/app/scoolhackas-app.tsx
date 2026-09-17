@@ -68,6 +68,66 @@ const hackLibrary: { tier: number; title: string; hacks: HackEntry[] }[] = [
   { tier: 5, title: "The Hacka vault", hacks: [] },
 ];
 
+type ProxyLink = { label: string; url: string; note: string };
+type ProxyEntry = { id: string; name: string; icon: string; status: "working" | "partial" | "down"; description: string; links: ProxyLink[] };
+const proxyLibrary: ProxyEntry[] = [
+  {
+    id: "space",
+    name: "Space",
+    icon: "https://void-nine-delta.vercel.app/assets/logo.webp",
+    status: "working",
+    description: "The all-rounder. A large built-in game library plus a proxy that actually loads sites, wrapped in a clean space-themed interface. Start here if you only want one link.",
+    links: [
+      { label: "Main link", url: "https://home.kasihinfo.com/", note: "Games and working proxy" },
+      { label: "Alternate 1", url: "https://try.deepee.com/", note: "Use if the main link is blocked" },
+      { label: "Alternate 2", url: "https://home.sia-tec.org/", note: "Second backup domain" },
+    ],
+  },
+  {
+    id: "daydream",
+    name: "Daydream X",
+    icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQjrHp6m1FT3g8GyonO6lplosmaQ5kQHNnAvPCmFYtDIA&s=10",
+    status: "working",
+    description: "Lightweight and fast. Two stripped-back proxy-only builds served straight from a CDN, plus a newer variant that adds a game menu on top.",
+    links: [
+      { label: "Main link", url: "https://cdn.jsdelivr.net/gh/TwiLabs/history/dist/index.svg", note: "Basic proxy only" },
+      { label: "Alternate 1", url: "https://cdn.jsdelivr.net/gh/TwiLabs/art/dist/index.svg", note: "Basic proxy only" },
+      { label: "Alternate 2", url: "https://51-222-206-184.plesk.page/", note: "New variant with games" },
+    ],
+  },
+  {
+    id: "truffle",
+    name: "Truffle",
+    icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqLJZCYO-UkcHar5H59UZFQnXEVwBTT2Xat2HVhQS5pg&s=10",
+    status: "working",
+    description: "Games, apps and a proxy — all of it working. The most complete single link on this list right now.",
+    links: [
+      { label: "Main link", url: "https://bout.awiki.org/search.html", note: "Games, apps and proxy" },
+    ],
+  },
+  {
+    id: "science",
+    name: "Definently Science",
+    icon: "https://yt3.googleusercontent.com/L0ZjJHHLfCOysqH_W7dU2tiM6ZEs296MxWbhuafOyufyInXmmvECwo7WfCkakWSCggt-pv59WA=s900-c-k-c0x00ffffff-no-rj",
+    status: "partial",
+    description: "Disguised as a lesson site. Tons of games in the library, while the proxy itself is only mid — fine for light browsing, not for heavy sites.",
+    links: [
+      { label: "Main link", url: "https://platform.geometrylesson.com/", note: "Tons of games, mid proxy" },
+    ],
+  },
+  {
+    id: "terbium",
+    name: "Terbium",
+    icon: "https://avatars.githubusercontent.com/u/111026938?v=4",
+    status: "down",
+    description: "A full desktop-style OS interface in the browser, and it looks great. Worth a look for the apps and the shell, but the proxy side is currently not working.",
+    links: [
+      { label: "Main link", url: "https://modernphysics.space/", note: "OS interface — proxy not working" },
+    ],
+  },
+];
+const proxyStatusLabel: Record<ProxyEntry["status"], string> = { working: "working", partial: "partly working", down: "proxy down" };
+
 type Tab = "Home" | "Hacks" | "Proxy" | "Other hacka stuff" | "Contact owner" | "You";
 const nav: { label: Tab; icon: typeof House }[] = [
   { label: "Home", icon: House }, { label: "Hacks", icon: Code2 }, { label: "Proxy", icon: Network },

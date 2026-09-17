@@ -339,7 +339,7 @@ const nav: { label: Tab; icon: typeof House }[] = [
   { label: "Other hacka stuff", icon: Orbit }, { label: "Contact owner", icon: Mail }, { label: "You", icon: UserRound },
 ];
 
-function levelForXp(xp: number) { return Math.floor(xp / 500) + 1; }
+function levelForXp(xp: number) { return levelInfo(xp).level; }
 function tierForLevel(level: number) { return Math.max(0, ranks.findIndex((rank) => level >= rank.min && level <= rank.max)); }
 function formatTime(total: number) { return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`; }
 

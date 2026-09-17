@@ -154,15 +154,18 @@ export function ScoolhackasApp() {
   const [saved, setSaved] = useState(false);
   const [onboarding, setOnboarding] = useState(false);
   const [levelUp, setLevelUp] = useState<string | null>(null);
+  const [devMode, setDevMode] = useState(false);
 
   const level = levelForXp(xp);
-  const tier = tierForLevel(level);
+  const baseTier = tierForLevel(level);
+  const tier = devMode ? ranks.length - 1 : baseTier;
   const rank = ranks[tier] ?? ranks[0];
   const levelXp = xp % 500;
 
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem("scoolhackas-progress") ?? "null") as { xp?: number; completed?: string[] } | null;
     if (stored) { setXp(stored.xp ?? 0); setCompleted(stored.completed ?? []); }
+    setDevMode(localStorage.getItem("scoolhackas-dev") === "on");
     const storedTheme = localStorage.getItem("scoolhackas-theme") === "light" ? "light" : "dark";
     setTheme(storedTheme); document.documentElement.classList.toggle("dark", storedTheme === "dark");
     void (async () => {
@@ -183,6 +186,7 @@ export function ScoolhackasApp() {
     })();
   }, []);
 
+  useEffect(() => { localStorage.setItem("scoolhackas-dev", devMode ? "on" : "off"); }, [devMode]);
   useEffect(() => { localStorage.setItem("scoolhackas-progress", JSON.stringify({ xp, completed })); }, [xp, completed]);
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
@@ -225,7 +229,7 @@ export function ScoolhackasApp() {
     const quest = quests.find((item) => item.id === questId);
     if (!quest || quest.tier > tier || completed.includes(questId)) return;
     if (questId === "blooket") window.open("about:blank", "_blank", "noopener,noreferrer");
-    setRun({ questId, phase: "confirming", remaining: seconds });
+    setRun({ questId, phase: "confirming", remaining: devMode ? 3 : seconds });
   };
   const claimRun = () => {
     if (!run) return;
@@ -248,6 +252,11 @@ export function ScoolhackasApp() {
     setTheme(chosenTheme); setProfile((value) => ({ ...value, persona })); setOnboarding(false);
     if (profile.id) await supabase.from("profiles").update({ persona, onboarded: true }).eq("id", profile.id);
   };
+  const setXpValue = (value: number) => setXp(Math.max(0, Math.round(value)));
+  const jumpToTier = (target: number) => { const min = ranks[target]?.min ?? 1; setXp((min - 1) * 500); };
+  const resetProgress = () => { setXp(0); setCompleted([]); setRun(null); };
+  const completeAllQuests = () => { setCompleted(quests.map((item) => item.id)); };
+
   const signOut = async () => { await supabase.auth.signOut(); await navigate({ to: "/auth", replace: true }); };
 
   const activeQuest = useMemo(() => quests.find((item) => item.id === run?.questId) ?? null, [run?.questId]);
@@ -264,7 +273,7 @@ export function ScoolhackasApp() {
             </Button>;
           })}
         </nav>
-        <div className="hidden items-center gap-2 border-l border-border pl-5 sm:flex"><span className="size-2 rounded-full bg-success shadow-[0_0_12px_var(--success)]" /><span className="text-xs text-muted-foreground">level {level}</span></div>
+        <div className="hidden items-center gap-2 border-l border-border pl-5 sm:flex"><span className="size-2 rounded-full bg-success shadow-[0_0_12px_var(--success)]" /><span className="text-xs text-muted-foreground">level {level}</span>{devMode && <span className="rounded-full border border-accent/40 px-2 py-0.5 text-[10px] uppercase tracking-wide text-accent">dev</span>}</div>
       </div>
     </header>
 
@@ -278,7 +287,7 @@ export function ScoolhackasApp() {
       {tab === "Contact owner" && (tier < CONTACT_TIER
         ? <LockedPanel eyebrow="DIRECT LINE" title="Contact owner" requirement={`Reach ${TIER_NAMES[CONTACT_TIER]} rank (level ${ranks[CONTACT_TIER]?.min}) to message the owner directly.`} />
         : <ContactPanel userId={profile.id} />)}
-      {tab === "You" && <YouPanel profile={profile} draftName={draftName} setDraftName={setDraftName} saveProfile={saveProfile} saved={saved} rank={rank.name} level={level} theme={theme} setTheme={setTheme} cloak={cloak} setCloak={setCloakValue} signOut={signOut} />}
+      {tab === "You" && <YouPanel profile={profile} draftName={draftName} setDraftName={setDraftName} saveProfile={saveProfile} saved={saved} rank={rank.name} level={level} theme={theme} setTheme={setTheme} cloak={cloak} setCloak={setCloakValue} signOut={signOut} admin={{ devMode, setDevMode, xp, setXp: setXpValue, jumpToTier, resetProgress, completeAllQuests, completed: completed.length, baseRank: ranks[baseTier]?.name ?? "" }} />}
     </main>
 
     {run && activeQuest && <QuestOverlay
@@ -477,29 +486,74 @@ function Stat({label,value}:{label:string;value:string}) { return <div className
 function EmptyPanel({eyebrow,title,description,icon:Icon}:{eyebrow:string;title:string;description:string;icon:typeof Code2}) { return <section className="animate-in fade-in duration-500"><p className="section-label">{eyebrow}</p><h1 className="page-title">{title}</h1><div className="mt-10 grid min-h-96 place-items-center rounded-lg border border-dashed border-border bg-card/30 p-8 text-center"><div><span className="mx-auto mb-5 grid size-12 place-items-center rounded-md border border-border bg-secondary"><Icon className="size-5 text-muted-foreground" /></span><p className="text-sm text-muted-foreground">{description}</p></div></div></section>; }
 function LockedPanel({eyebrow,title,requirement}:{eyebrow:string;title:string;requirement:string}) { return <section className="animate-in fade-in duration-500"><p className="section-label">{eyebrow}</p><h1 className="page-title">{title}</h1><div className="mt-10 grid min-h-96 place-items-center rounded-lg border border-dashed border-border bg-card/30 p-8 text-center"><div><span className="mx-auto mb-5 grid size-12 place-items-center rounded-md border border-border bg-secondary"><LockKeyhole className="size-5 text-muted-foreground" /></span><p className="text-sm text-muted-foreground">{requirement}</p></div></div></section>; }
 function OtherPanel() { return <section className="animate-in fade-in duration-500"><p className="section-label">OTHER / WORKSPACE</p><h1 className="page-title">Other hacka stuff</h1><div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3">{[1,2,3,4,5,6].map((item)=><div key={item} className="aspect-[1.5] rounded-lg border border-dashed border-border bg-card/30" />)}</div></section>; }
-function YouPanel({profile,draftName,setDraftName,saveProfile,saved,rank,level,theme,setTheme,cloak,setCloak,signOut}:{profile:{display_name:string;created_at:string;persona:string};draftName:string;setDraftName:(v:string)=>void;saveProfile:()=>void;saved:boolean;rank:string;level:number;theme:"dark"|"light";setTheme:(v:"dark"|"light")=>void;cloak:boolean;setCloak:(v:boolean)=>void;signOut:()=>void}) { const joined=profile.created_at ? new Intl.DateTimeFormat("en",{month:"long",year:"numeric"}).format(new Date(profile.created_at)) : "Loading…"; return <section className="animate-in fade-in duration-500"><div className="mb-10 flex items-end justify-between"><div><p className="section-label">PERSONAL DASHBOARD</p><h1 className="page-title">You</h1></div><Button variant="ghost" size="sm" onClick={signOut}><LogOut /> Sign out</Button></div><div className="grid gap-5 lg:grid-cols-2"><div className="rounded-lg border border-border bg-card p-6"><div className="mb-8 flex items-center gap-4"><span className="grid size-12 place-items-center rounded-md bg-primary text-primary-foreground"><CircleUserRound /></span><div><h2 className="font-semibold">{profile.display_name || "hacka"}</h2><p className="text-sm text-muted-foreground">Joined {joined}{profile.persona ? ` · ${profile.persona}` : ""}</p></div></div><label className="text-xs font-medium text-muted-foreground">DISPLAY NAME</label><div className="mt-2 flex gap-2"><Input value={draftName} onChange={(e)=>setDraftName(e.target.value)} maxLength={40}/><Button onClick={saveProfile}>{saved ? <Check /> : "Save"}</Button></div><div className="mt-6 flex items-center justify-between border-t border-border pt-5"><div><p className="text-sm font-medium">{rank}</p><p className="text-xs text-muted-foreground">Current rank · level {level}</p></div><Award className="text-accent" /></div></div><div className="rounded-lg border border-border bg-card p-6"><h2 className="font-semibold">Preferences</h2><div className="mt-6 divide-y divide-border"><Preference icon={theme === "dark" ? Moon : Sun} title="Appearance" description={`${theme === "dark" ? "Dark" : "Light"} mode`} control={<Switch checked={theme==="light"} onCheckedChange={(v)=>setTheme(v?"light":"dark")} />} /><Preference icon={ShieldCheck} title="Enable Google Cloak" description="Disguise this browser tab" control={<Switch checked={cloak} onCheckedChange={setCloak} />} /></div></div><div className="rounded-lg border border-border bg-card p-6 lg:col-span-2"><div className="flex items-center justify-between"><div><h2 className="font-semibold">My Bookmarked Hacks</h2><p className="mt-1 text-sm text-muted-foreground">Your saved collection will appear here.</p></div><Bookmark className="text-muted-foreground" /></div><div className="mt-6 grid min-h-32 place-items-center rounded-md border border-dashed border-border"><p className="text-sm text-muted-foreground">No bookmarks yet</p></div></div></div><AdminEntry /></section>; }
-function AdminEntry() {
+function YouPanel({profile,draftName,setDraftName,saveProfile,saved,rank,level,theme,setTheme,cloak,setCloak,signOut,admin}:{profile:{display_name:string;created_at:string;persona:string};draftName:string;setDraftName:(v:string)=>void;saveProfile:()=>void;saved:boolean;rank:string;level:number;theme:"dark"|"light";setTheme:(v:"dark"|"light")=>void;cloak:boolean;setCloak:(v:boolean)=>void;signOut:()=>void;admin:AdminState}) { const joined=profile.created_at ? new Intl.DateTimeFormat("en",{month:"long",year:"numeric"}).format(new Date(profile.created_at)) : "Loading…"; return <section className="animate-in fade-in duration-500"><div className="mb-10 flex items-end justify-between"><div><p className="section-label">PERSONAL DASHBOARD</p><h1 className="page-title">You</h1></div><Button variant="ghost" size="sm" onClick={signOut}><LogOut /> Sign out</Button></div><div className="grid gap-5 lg:grid-cols-2"><div className="rounded-lg border border-border bg-card p-6"><div className="mb-8 flex items-center gap-4"><span className="grid size-12 place-items-center rounded-md bg-primary text-primary-foreground"><CircleUserRound /></span><div><h2 className="font-semibold">{profile.display_name || "hacka"}</h2><p className="text-sm text-muted-foreground">Joined {joined}{profile.persona ? ` · ${profile.persona}` : ""}</p></div></div><label className="text-xs font-medium text-muted-foreground">DISPLAY NAME</label><div className="mt-2 flex gap-2"><Input value={draftName} onChange={(e)=>setDraftName(e.target.value)} maxLength={40}/><Button onClick={saveProfile}>{saved ? <Check /> : "Save"}</Button></div><div className="mt-6 flex items-center justify-between border-t border-border pt-5"><div><p className="text-sm font-medium">{rank}</p><p className="text-xs text-muted-foreground">Current rank · level {level}</p></div><Award className="text-accent" /></div></div><div className="rounded-lg border border-border bg-card p-6"><h2 className="font-semibold">Preferences</h2><div className="mt-6 divide-y divide-border"><Preference icon={theme === "dark" ? Moon : Sun} title="Appearance" description={`${theme === "dark" ? "Dark" : "Light"} mode`} control={<Switch checked={theme==="light"} onCheckedChange={(v)=>setTheme(v?"light":"dark")} />} /><Preference icon={ShieldCheck} title="Enable Google Cloak" description="Disguise this browser tab" control={<Switch checked={cloak} onCheckedChange={setCloak} />} /></div></div><div className="rounded-lg border border-border bg-card p-6 lg:col-span-2"><div className="flex items-center justify-between"><div><h2 className="font-semibold">My Bookmarked Hacks</h2><p className="mt-1 text-sm text-muted-foreground">Your saved collection will appear here.</p></div><Bookmark className="text-muted-foreground" /></div><div className="mt-6 grid min-h-32 place-items-center rounded-md border border-dashed border-border"><p className="text-sm text-muted-foreground">No bookmarks yet</p></div></div></div><AdminEntry admin={admin} /></section>; }
+type AdminState = {
+  devMode: boolean; setDevMode: (v: boolean) => void;
+  xp: number; setXp: (v: number) => void;
+  jumpToTier: (t: number) => void;
+  resetProgress: () => void; completeAllQuests: () => void;
+  completed: number; baseRank: string;
+};
+
+function AdminEntry({ admin }: { admin: AdminState }) {
   const [open, setOpen] = useState(false);
   const [code, setCode] = useState("");
   const [unlocked, setUnlocked] = useState(false);
+  const [xpDraft, setXpDraft] = useState(String(admin.xp));
   const close = () => { setOpen(false); setCode(""); setUnlocked(false); };
+  const tryUnlock = () => { if (code === "hacka") { setUnlocked(true); setXpDraft(String(admin.xp)); } };
   return <>
     <button type="button" onClick={() => setOpen(true)} aria-label="admin panel"
       className="fixed bottom-3 left-3 z-40 flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] text-muted-foreground opacity-[0.07] transition-opacity duration-300 hover:opacity-70 focus-visible:opacity-70 focus-visible:outline-none">
       <Sliders className="size-3" /> admin panel
     </button>
-    {open && <div className="fixed inset-0 z-50 grid place-items-center bg-background/80 p-4 backdrop-blur-sm animate-in fade-in" onClick={close}>
-      <div className="w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
+    {open && <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-background/80 p-4 backdrop-blur-sm animate-in fade-in" onClick={close}>
+      <div className="w-full max-w-lg rounded-lg border border-border bg-card p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <h2 className="font-semibold">admin panel</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{unlocked ? "Owner tools. Nothing wired up here yet." : "Restricted area. Enter the access code."}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{unlocked ? "Owner tools. Changes apply instantly." : "Restricted area. Enter the access code."}</p>
           </div>
           <Button variant="ghost" size="icon" onClick={close} aria-label="Close"><X /></Button>
         </div>
-        {unlocked
-          ? <div className="grid min-h-32 place-items-center rounded-md border border-dashed border-border"><p className="text-sm text-muted-foreground">No admin tools yet</p></div>
-          : <div className="flex gap-2"><Input autoFocus type="password" value={code} onChange={(e) => setCode(e.target.value)} placeholder="access code" onKeyDown={(e) => { if (e.key === "Enter" && code === "hacka") setUnlocked(true); }} /><Button onClick={() => { if (code === "hacka") setUnlocked(true); }}>Enter</Button></div>}
+        {!unlocked
+          ? <div className="flex gap-2"><Input autoFocus type="password" value={code} onChange={(e) => setCode(e.target.value)} placeholder="access code" onKeyDown={(e) => { if (e.key === "Enter") tryUnlock(); }} /><Button onClick={tryUnlock}>Enter</Button></div>
+          : <div className="space-y-5">
+              <div className="flex items-center gap-3 rounded-md border border-border p-4">
+                <Sliders className="size-4 text-muted-foreground" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Developer mode</p>
+                  <p className="text-xs text-muted-foreground">Unlocks every rank-gated panel and cuts quest timers to 3s.</p>
+                </div>
+                <Switch checked={admin.devMode} onCheckedChange={admin.setDevMode} />
+              </div>
+
+              <div className="rounded-md border border-border p-4">
+                <p className="text-xs font-medium text-muted-foreground">XP CONTROL</p>
+                <div className="mt-3 flex gap-2">
+                  <Input value={xpDraft} inputMode="numeric" onChange={(e) => setXpDraft(e.target.value.replace(/[^0-9]/g, ""))} placeholder="total xp" />
+                  <Button onClick={() => admin.setXp(Number(xpDraft || 0))}>Set</Button>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {[100, 500, 2500].map((amount) => <Button key={amount} size="sm" variant="secondary" onClick={() => { const next = admin.xp + amount; admin.setXp(next); setXpDraft(String(next)); }}>+{amount} XP</Button>)}
+                </div>
+              </div>
+
+              <div className="rounded-md border border-border p-4">
+                <p className="text-xs font-medium text-muted-foreground">JUMP TO RANK</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {ranks.map((item, index) => <Button key={item.name} size="sm" variant={admin.baseRank === item.name ? "default" : "outline"} onClick={() => { admin.jumpToTier(index); setXpDraft(String(((ranks[index]?.min ?? 1) - 1) * 500)); }}>{item.name}</Button>)}
+                </div>
+              </div>
+
+              <div className="rounded-md border border-border p-4">
+                <p className="text-xs font-medium text-muted-foreground">QUESTS · {admin.completed}/{quests.length} COMPLETE</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button size="sm" variant="secondary" onClick={admin.completeAllQuests}><Check /> Complete all</Button>
+                  <Button size="sm" variant="outline" onClick={() => { admin.resetProgress(); setXpDraft("0"); }}><RotateCw /> Reset progress</Button>
+                </div>
+              </div>
+            </div>}
       </div>
     </div>}
   </>;

@@ -273,7 +273,7 @@ export function ScoolhackasApp() {
       {tab === "Hacks" && <HacksPanel tier={tier} />}
       {tab === "Proxy" && (tier < PROXY_TIER
         ? <LockedPanel eyebrow="PROXY / UTILITIES" title="Proxy" requirement={`Reach ${TIER_NAMES[PROXY_TIER]} rank (level ${ranks[PROXY_TIER]?.min}) to open the proxy panel.`} />
-        : <EmptyPanel eyebrow="PROXY / UTILITIES" title="Proxy" description="Proxy panel utilities." icon={Network} />)}
+        : <ProxyPanel />)}
       {tab === "Other hacka stuff" && <OtherPanel />}
       {tab === "Contact owner" && (tier < CONTACT_TIER
         ? <LockedPanel eyebrow="DIRECT LINE" title="Contact owner" requirement={`Reach ${TIER_NAMES[CONTACT_TIER]} rank (level ${ranks[CONTACT_TIER]?.min}) to message the owner directly.`} />

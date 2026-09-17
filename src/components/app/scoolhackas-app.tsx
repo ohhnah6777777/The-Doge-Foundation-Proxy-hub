@@ -437,7 +437,7 @@ export function ScoolhackasApp() {
   }, [completed]);
 
   const startQuest = (questId: string, seconds: number) => {
-    const quest = quests.find((item) => item.id === questId);
+    const quest = allQuests.find((item) => item.id === questId);
     if (!quest || quest.tier > tier || completed.includes(questId)) return;
     const url = quest.urls[Math.floor(Math.random() * quest.urls.length)] ?? quest.urls[0]!;
     window.open(url, "_blank", "noopener,noreferrer");
@@ -445,7 +445,7 @@ export function ScoolhackasApp() {
   };
   const claimRun = () => {
     if (!run) return;
-    const quest = quests.find((item) => item.id === run.questId);
+    const quest = allQuests.find((item) => item.id === run.questId);
     if (quest) grant(quest.id, quest.xp);
     setRun(null);
   };
@@ -456,8 +456,10 @@ export function ScoolhackasApp() {
     const used = fresh ? 0 : resets.used;
     if (used >= RESET_LIMIT) return;
     setResets({ used: used + 1, since: fresh ? Date.now() : resets.since });
-    setRun(null); setConfirmExit(false); setCompleted([]);
+    setRun(null); setConfirmExit(false);
+    setQuestSeed((value) => value + 1 + Math.floor(Math.random() * 97));
   };
+
 
   const saveProfile = async () => {
     if (!profile.id) return;

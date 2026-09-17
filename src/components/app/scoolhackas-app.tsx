@@ -68,6 +68,66 @@ const hackLibrary: { tier: number; title: string; hacks: HackEntry[] }[] = [
   { tier: 5, title: "The Hacka vault", hacks: [] },
 ];
 
+type ProxyLink = { label: string; url: string; note: string };
+type ProxyEntry = { id: string; name: string; icon: string; status: "working" | "partial" | "down"; description: string; links: ProxyLink[] };
+const proxyLibrary: ProxyEntry[] = [
+  {
+    id: "space",
+    name: "Space",
+    icon: "https://void-nine-delta.vercel.app/assets/logo.webp",
+    status: "working",
+    description: "The all-rounder. A large built-in game library plus a proxy that actually loads sites, wrapped in a clean space-themed interface. Start here if you only want one link.",
+    links: [
+      { label: "Main link", url: "https://home.kasihinfo.com/", note: "Games and working proxy" },
+      { label: "Alternate 1", url: "https://try.deepee.com/", note: "Use if the main link is blocked" },
+      { label: "Alternate 2", url: "https://home.sia-tec.org/", note: "Second backup domain" },
+    ],
+  },
+  {
+    id: "daydream",
+    name: "Daydream X",
+    icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQjrHp6m1FT3g8GyonO6lplosmaQ5kQHNnAvPCmFYtDIA&s=10",
+    status: "working",
+    description: "Lightweight and fast. Two stripped-back proxy-only builds served straight from a CDN, plus a newer variant that adds a game menu on top.",
+    links: [
+      { label: "Main link", url: "https://cdn.jsdelivr.net/gh/TwiLabs/history/dist/index.svg", note: "Basic proxy only" },
+      { label: "Alternate 1", url: "https://cdn.jsdelivr.net/gh/TwiLabs/art/dist/index.svg", note: "Basic proxy only" },
+      { label: "Alternate 2", url: "https://51-222-206-184.plesk.page/", note: "New variant with games" },
+    ],
+  },
+  {
+    id: "truffle",
+    name: "Truffle",
+    icon: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqLJZCYO-UkcHar5H59UZFQnXEVwBTT2Xat2HVhQS5pg&s=10",
+    status: "working",
+    description: "Games, apps and a proxy — all of it working. The most complete single link on this list right now.",
+    links: [
+      { label: "Main link", url: "https://bout.awiki.org/search.html", note: "Games, apps and proxy" },
+    ],
+  },
+  {
+    id: "science",
+    name: "Definently Science",
+    icon: "https://yt3.googleusercontent.com/L0ZjJHHLfCOysqH_W7dU2tiM6ZEs296MxWbhuafOyufyInXmmvECwo7WfCkakWSCggt-pv59WA=s900-c-k-c0x00ffffff-no-rj",
+    status: "partial",
+    description: "Disguised as a lesson site. Tons of games in the library, while the proxy itself is only mid — fine for light browsing, not for heavy sites.",
+    links: [
+      { label: "Main link", url: "https://platform.geometrylesson.com/", note: "Tons of games, mid proxy" },
+    ],
+  },
+  {
+    id: "terbium",
+    name: "Terbium",
+    icon: "https://avatars.githubusercontent.com/u/111026938?v=4",
+    status: "down",
+    description: "A full desktop-style OS interface in the browser, and it looks great. Worth a look for the apps and the shell, but the proxy side is currently not working.",
+    links: [
+      { label: "Main link", url: "https://modernphysics.space/", note: "OS interface — proxy not working" },
+    ],
+  },
+];
+const proxyStatusLabel: Record<ProxyEntry["status"], string> = { working: "working", partial: "partly working", down: "proxy down" };
+
 type Tab = "Home" | "Hacks" | "Proxy" | "Other hacka stuff" | "Contact owner" | "You";
 const nav: { label: Tab; icon: typeof House }[] = [
   { label: "Home", icon: House }, { label: "Hacks", icon: Code2 }, { label: "Proxy", icon: Network },
@@ -213,7 +273,7 @@ export function ScoolhackasApp() {
       {tab === "Hacks" && <HacksPanel tier={tier} />}
       {tab === "Proxy" && (tier < PROXY_TIER
         ? <LockedPanel eyebrow="PROXY / UTILITIES" title="Proxy" requirement={`Reach ${TIER_NAMES[PROXY_TIER]} rank (level ${ranks[PROXY_TIER]?.min}) to open the proxy panel.`} />
-        : <EmptyPanel eyebrow="PROXY / UTILITIES" title="Proxy" description="Proxy panel utilities." icon={Network} />)}
+        : <ProxyPanel />)}
       {tab === "Other hacka stuff" && <OtherPanel />}
       {tab === "Contact owner" && (tier < CONTACT_TIER
         ? <LockedPanel eyebrow="DIRECT LINE" title="Contact owner" requirement={`Reach ${TIER_NAMES[CONTACT_TIER]} rank (level ${ranks[CONTACT_TIER]?.min}) to message the owner directly.`} />
@@ -325,6 +385,37 @@ function HacksPanel({ tier }: { tier: number }) {
       })}
     </div>
   </section>;
+}
+
+function ProxyPanel() {
+  return <section className="animate-in fade-in duration-500">
+    <p className="section-label">PROXY / UTILITIES</p>
+    <h1 className="page-title">Proxy</h1>
+    <p className="page-copy">Unblocked sites and game hubs. If one link stops working, try the alternates.</p>
+    <div className="mt-10 grid gap-5 lg:grid-cols-2">{proxyLibrary.map((proxy) => <ProxyCard key={proxy.id} proxy={proxy} />)}</div>
+  </section>;
+}
+
+function ProxyCard({ proxy }: { proxy: ProxyEntry }) {
+  const tone = proxy.status === "working" ? "border-success/40 bg-success/10 text-success"
+    : proxy.status === "partial" ? "border-accent/40 bg-accent/10 text-accent"
+    : "border-destructive/40 bg-destructive/10 text-destructive";
+  return <article className="flex flex-col rounded-lg border border-border bg-card p-6">
+    <div className="flex items-start gap-4">
+      <img src={proxy.icon} alt={`${proxy.name} logo`} loading="lazy" referrerPolicy="no-referrer" className="size-12 shrink-0 rounded-md border border-border bg-secondary object-contain p-1" />
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2"><h3 className="font-semibold">{proxy.name}</h3><span className={`rounded-full border px-2 py-0.5 font-mono text-[10px] ${tone}`}>{proxyStatusLabel[proxy.status]}</span></div>
+        <p className="mt-1 text-sm text-muted-foreground">{proxy.description}</p>
+      </div>
+    </div>
+    <div className="mt-5 border-t border-border pt-5">
+      <p className="font-mono text-[10px] tracking-widest text-muted-foreground">LINKS</p>
+      <ul className="mt-3 divide-y divide-border">{proxy.links.map((link) => <li key={link.url} className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
+        <div className="min-w-0"><p className="text-sm font-medium">{link.label}</p><p className="truncate text-xs text-muted-foreground">{link.note}</p></div>
+        <a href={link.url} target="_blank" rel="noopener noreferrer" className="inline-flex shrink-0 items-center gap-2 text-sm font-medium text-primary hover:underline"><Link2 className="size-4" /> Open</a>
+      </li>)}</ul>
+    </div>
+  </article>;
 }
 
 function HackCard({ hack }: { hack: HackEntry }) {

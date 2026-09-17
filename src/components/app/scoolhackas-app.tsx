@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Award, Bookmark, Braces, Check, CircleUserRound, Clock3, Code2, House, Link2, LockKeyhole, LogOut, Mail, Moon, Network, Orbit, Pencil, Play, RotateCw, Send, ShieldCheck, Sliders, Sparkles, Sun, UserRound, X } from "lucide-react";
+import { Award, Bookmark, Braces, Check, CircleUserRound, Clock3, Code2, Copy, Flame, House, Link2, LockKeyhole, LogOut, Mail, Moon, Network, Orbit, Pencil, Play, RotateCw, Send, ShieldCheck, Sliders, Sparkles, Sun, TrendingUp, UserRound, X, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
+import { bubbleLetters, calculator, drawOnScreen, historyFlooder, rainbowPage } from "@/lib/hack-scripts";
 import autoclickerIcon from "@/assets/hack-autoclicker.png";
+import historyIcon from "@/assets/hack-history-water.png";
 
 const ranks = [
   { name: "Beginner hacka", min: 1, max: 5 }, { name: "Intermediate hacka", min: 6, max: 12 },
@@ -16,23 +18,142 @@ const TIER_NAMES = ["Beginner", "Intermediate", "Pro", "Alpha", "Omega", "The Ha
 const PROXY_TIER = 2;
 const CONTACT_TIER = 4;
 
-const quests = [
-  { id: "bookmarklet", tier: 0, title: "Create your first hack bookmarklet", xp: 100, seconds: 20,
-    urls: ["https://github.com/sparemind/AutoClickerBookmarklet", "https://github.com/TacocatDev01/Edit-Page-Bookmarklet"] },
-  { id: "cloak", tier: 1, title: "Deploy your first cloak panel", xp: 180, seconds: 45,
-    urls: ["https://www.google.com/"] },
-  { id: "blooket", tier: 2, title: "Hack your first Blooket game", xp: 300, seconds: 120,
-    urls: ["https://www.blooket.com/"] },
-  { id: "handshake", tier: 3, title: "Initialize a proxy handshake", xp: 420, seconds: 75,
-    urls: ["https://home.kasihinfo.com/", "https://try.deepee.com/"] },
-  { id: "omega", tier: 4, title: "Complete an omega systems check", xp: 600, seconds: 90,
-    urls: ["https://bout.awiki.org/search.html", "https://platform.geometrylesson.com/"] },
-] as const;
+type QuestDef = { id: string; tier: number; title: string; detail: string; xp: number; seconds: number; urls: string[] };
+
+const questSpecs: { xp: number; seconds: number; urls: string[]; items: [string, string][] }[] = [
+  { xp: 100, seconds: 20, urls: ["https://github.com/sparemind/AutoClickerBookmarklet", "https://github.com/TacocatDev01/Edit-Page-Bookmarklet"], items: [
+    ["Create your first hack bookmarklet", "Save a script to your bookmarks bar and fire it once."],
+    ["Run the auto clicker on any page", "Load the clicker and let it run for a few seconds."],
+    ["Make a page editable", "Use the edit page script and rewrite a headline."],
+    ["Name your bookmarklet folder", "Group your scripts in a folder called hacks."],
+    ["Show your bookmarks bar", "Ctrl/Cmd + Shift + B, then keep it visible."],
+    ["Copy a raw script from GitHub", "Grab the raw code, not the rendered page."],
+    ["Test a script on a blank tab", "Confirm it runs without breaking the page."],
+    ["Bookmark two scripts in a row", "Build the habit of stacking your toolkit."],
+    ["Read a script before running it", "Skim the code and find what it actually does."],
+    ["Break a page, then refresh it", "Learn that a reload undoes any local edit."],
+    ["Rename a script for quick access", "Short names are faster to find mid-class."],
+    ["Pin your hacks folder", "Keep the folder first on the bar."],
+    ["Try a script on a school site", "See which pages allow bookmarklets."],
+    ["Share a script with a friend", "Send them the source link, not a screenshot."],
+    ["Finish beginner orientation", "Wrap the starter track and move up."],
+  ] },
+  { xp: 180, seconds: 45, urls: ["https://github.com/TacocatDev01/Edit-Page-Bookmarklet", "https://www.google.com/"], items: [
+    ["Deploy your first cloak panel", "Turn the tab disguise on and check the title."],
+    ["Flood your history 50 times", "Run the history flooder and confirm the alert."],
+    ["Turn a page into bubble letters", "Fire the bubble font script on a text-heavy page."],
+    ["Draw on a live page", "Use the draw script and change pen size."],
+    ["Make a page rainbow", "Toggle the hue-rotate script on and off."],
+    ["Solve something with the calculator", "Run the calculator script and use an equation."],
+    ["Chain two scripts together", "Run the rainbow and the draw script at once."],
+    ["Cloak, then uncloak", "Confirm the favicon swaps both ways."],
+    ["Edit and screenshot a page", "Make a harmless edit and capture it."],
+    ["Build a three-script toolkit", "Keep your best three on the bar."],
+    ["Clear a flooded history", "Learn how to clean up after the flooder."],
+    ["Change the pen colour mid-draw", "Press c and pick a new colour."],
+    ["Run a script on a locked-down site", "Find out where bookmarklets get blocked."],
+    ["Teach a friend the cloak", "Walk someone through the disguise toggle."],
+    ["Finish the intermediate track", "Close out tier two and push to Pro."],
+  ] },
+  { xp: 300, seconds: 90, urls: ["https://www.blooket.com/", "https://dashboard.blooket.com/"], items: [
+    ["Hack your first Blooket game", "Join a live game and run a script on it."],
+    ["Make 3 bookmarklets in one sitting", "Build a proper Pro-tier toolkit."],
+    ["Farm tokens in Blooket", "Run a full solo round with a script loaded."],
+    ["Join a game with a spoofed name", "Enter with a custom display name."],
+    ["Auto-answer a full round", "Let the script pick every answer."],
+    ["Run a half proxy session", "Open a proxy and browse for a minute."],
+    ["Unlock 25% of the game list", "Try five different game sites."],
+    ["Test a script across two browsers", "Confirm it works outside Chrome."],
+    ["Flood a lobby with names", "Join a test lobby several times."],
+    ["Beat your own high score", "Score higher than your last run."],
+    ["Read a Blooket script's source", "Understand what it sends to the server."],
+    ["Fix a script that stopped working", "Patch a broken selector yourself."],
+    ["Build a launcher page", "Collect your scripts on one local page."],
+    ["Run a script in a proxy tab", "Get a bookmarklet working inside a proxy."],
+    ["Finish the Pro track", "Clear tier three and aim for Alpha."],
+  ] },
+  { xp: 420, seconds: 75, urls: ["https://kahoot.it/", "https://www.blooket.com/"], items: [
+    ["Initialize a proxy handshake", "Open a proxy and confirm the tunnel loads."],
+    ["Run a Kahoot answer script", "Join a Kahoot and load the helper."],
+    ["Flood a Kahoot lobby", "Send several bots into a test game."],
+    ["Full Blooket hack run", "Use the complete hack set in one game."],
+    ["Spoof a Kahoot nickname", "Get past the nickname filter."],
+    ["Run two hacks in parallel", "Blooket and Kahoot in separate tabs."],
+    ["Map a game's network calls", "Watch the requests in dev tools."],
+    ["Beat a timed Kahoot round", "Finish first with the script running."],
+    ["Build an Alpha script folder", "Organise every script you own."],
+    ["Test a hack against a patch", "Find out what the site fixed."],
+    ["Recover from a kicked session", "Rejoin after being removed."],
+    ["Run a proxy inside a proxy", "Stack two tunnels and see what breaks."],
+    ["Write your own one-liner", "Make a tiny script of your own."],
+    ["Document your setup", "Write down what you run and why."],
+    ["Finish the Alpha track", "Clear tier four and head for Omega."],
+  ] },
+  { xp: 600, seconds: 90, urls: ["https://bout.awiki.org/search.html", "https://platform.geometrylesson.com/", "https://home.kasihinfo.com/"], items: [
+    ["Complete an omega systems check", "Run a full pass over every tool you own."],
+    ["Unlock 75% of the game list", "Work through most of the game hubs."],
+    ["Run every Kahoot hack once", "Full coverage on the Kahoot set."],
+    ["Run every Blooket hack once", "Full coverage on the Blooket set."],
+    ["Test 75% of the proxies", "Confirm which links still resolve."],
+    ["Find a dead proxy and report it", "Message the owner with the broken link."],
+    ["Chain a proxy to a game hub", "Reach a blocked game through a tunnel."],
+    ["Benchmark two proxies", "Compare load times side by side."],
+    ["Build an omega launcher", "One page, every link you use."],
+    ["Break and repair a script", "Deliberately break it, then fix it."],
+    ["Run a stealth session", "Cloak on, no traces left behind."],
+    ["Mirror a hack to a backup link", "Keep a second copy that still works."],
+    ["Stress test a proxy", "Load something heavy through it."],
+    ["Mentor a lower rank", "Walk someone through their first script."],
+    ["Finish the Omega track", "Clear tier five and approach The Hacka."],
+  ] },
+  { xp: 800, seconds: 120, urls: ["https://bout.awiki.org/search.html", "https://home.kasihinfo.com/", "https://www.blooket.com/"], items: [
+    ["Full access sweep", "Touch every unlocked panel in one session."],
+    ["Audit the entire hack library", "Check every script still runs."],
+    ["Audit every proxy link", "Verify all mains and alternates."],
+    ["Write a hack of your own", "Ship something nobody else has."],
+    ["Publish your script source", "Put it somewhere others can copy."],
+    ["Run a full Kahoot takeover", "Every Kahoot tool at once."],
+    ["Run a full Blooket takeover", "Every Blooket tool at once."],
+    ["Rebuild a patched hack", "Bring a dead script back to life."],
+    ["Host a private launcher", "Your own page, your own links."],
+    ["Beat every game hub once", "One win on each hub you can reach."],
+    ["Message the owner", "Use the direct line on the contact page."],
+    ["Train two new hackas", "Get two people to Intermediate."],
+    ["Keep a zero-trace session", "Cloaked, flooded, cleaned."],
+    ["Find the secret vault", "Locate what stays locked, even here."],
+    ["Complete the Hacka trial", "The last one. Finish it."],
+  ] },
+];
+
+const questPool: QuestDef[][] = questSpecs.map((spec, tier) =>
+  spec.items.map(([title, detail], index) => ({
+    id: `t${tier}q${index}`, tier, title, detail,
+    xp: spec.xp + index * 10, seconds: Math.max(15, spec.seconds + (index % 4) * 10), urls: spec.urls,
+  })),
+);
+const allQuests: QuestDef[] = questPool.flat();
+const QUESTS_SHOWN = 5;
+
+function pickQuests(tier: number, seed: number) {
+  const pool = questPool[Math.min(tier, questPool.length - 1)] ?? [];
+  const scored = pool.map((quest, index) => ({ quest, key: Math.sin((index + 1) * 9301 + seed * 49297) }));
+  scored.sort((a, b) => a.key - b.key);
+  return scored.slice(0, QUESTS_SHOWN).map((item) => item.quest);
+}
+
+function xpForLevel(level: number) { return 300 + (level - 1) * 90; }
+function levelInfo(xp: number) {
+  let level = 1; let remaining = xp;
+  while (remaining >= xpForLevel(level)) { remaining -= xpForLevel(level); level += 1; }
+  return { level, into: remaining, need: xpForLevel(level) };
+}
+function totalXpForLevel(target: number) { let sum = 0; for (let l = 1; l < target; l += 1) sum += xpForLevel(l); return sum; }
 
 const RESET_LIMIT = 5;
 const RESET_WINDOW_MS = 6 * 60 * 60 * 1000;
 
-type HackEntry = { id: string; name: string; description: string; url: string; steps: string[]; image?: string };
+
+type HackEntry = { id: string; name: string; description: string; url?: string; steps: string[]; image?: string; code?: string };
 const hackLibrary: { tier: number; title: string; hacks: HackEntry[] }[] = [
   {
     tier: 0,
@@ -69,7 +190,83 @@ const hackLibrary: { tier: number; title: string; hacks: HackEntry[] }[] = [
       },
     ],
   },
-  { tier: 1, title: "Intermediate hacks", hacks: [] },
+  {
+    tier: 1,
+    title: "Intermediate hacks",
+    hacks: [
+      {
+        id: "historyflood",
+        name: "History flooder",
+        description: "Asks how many entries to create, then stuffs that many copies of the current page into your browser history so the back button drowns.",
+        image: historyIcon,
+        code: historyFlooder,
+        steps: [
+          "Press Copy code to put the script on your clipboard.",
+          "Show your bookmarks bar (Ctrl/Cmd + Shift + B).",
+          "Right-click the bar and choose \"Add page\" / \"New bookmark\".",
+          "Name it \"history flood\" and paste the code into the URL field.",
+          "Open the page you want buried and click the bookmark.",
+          "Type the number of entries and confirm the success alert.",
+        ],
+      },
+      {
+        id: "bubbleletters",
+        name: "Bubble letter font",
+        description: "Rewrites every letter and number on the page into circled bubble characters, and keeps doing it as new text appears.",
+        code: bubbleLetters,
+        steps: [
+          "Press Copy code.",
+          "Create a new bookmark on your bookmarks bar.",
+          "Name it \"bubble letters\" and paste the code as the URL.",
+          "Open any text-heavy page and click the bookmark.",
+          "Watch the text convert as you scroll.",
+          "Refresh the page to put everything back.",
+        ],
+      },
+      {
+        id: "drawscreen",
+        name: "Draw on your screen",
+        description: "Turns your cursor into a paintbrush over any page. Keyboard keys change the colour, size, opacity, and lift the pen.",
+        code: drawOnScreen,
+        steps: [
+          "Press Copy code.",
+          "Create a new bookmark and paste the code as the URL.",
+          "Open any page and click the bookmark, then read the alert.",
+          "Press d to put the pen down and u to lift it.",
+          "Press c for colour, s for size, o for opacity.",
+          "Refresh the page to clear everything you drew.",
+        ],
+      },
+      {
+        id: "rainbowpage",
+        name: "Rainbow page",
+        description: "Cycles the whole page through the colour spectrum with a smooth hue rotation. Click it again to switch the effect off.",
+        code: rainbowPage,
+        steps: [
+          "Press Copy code.",
+          "Create a new bookmark and paste the code as the URL.",
+          "Name it \"rainbow\" so you can find it fast.",
+          "Open any page and click the bookmark to start the cycle.",
+          "Click the bookmark a second time to turn it off.",
+          "Refreshing also removes the effect.",
+        ],
+      },
+      {
+        id: "calculator",
+        name: "Pop-up calculator",
+        description: "A prompt-driven calculator with basic maths plus ready-made equations for slope, area, volume, distance, time and speed.",
+        code: calculator,
+        steps: [
+          "Press Copy code.",
+          "Create a new bookmark and paste the code as the URL.",
+          "Name it \"calc\" and keep it on the bar.",
+          "Click it and choose 1 for basic maths or 2 for equations.",
+          "Pick the operation number, then enter each value.",
+          "Read the answer in the final alert.",
+        ],
+      },
+    ],
+  },
   { tier: 2, title: "Pro hacks", hacks: [] },
   { tier: 3, title: "Alpha hacks", hacks: [] },
   { tier: 4, title: "Omega hacks", hacks: [] },
@@ -142,7 +339,7 @@ const nav: { label: Tab; icon: typeof House }[] = [
   { label: "Other hacka stuff", icon: Orbit }, { label: "Contact owner", icon: Mail }, { label: "You", icon: UserRound },
 ];
 
-function levelForXp(xp: number) { return Math.floor(xp / 500) + 1; }
+function levelForXp(xp: number) { return levelInfo(xp).level; }
 function tierForLevel(level: number) { return Math.max(0, ranks.findIndex((rank) => level >= rank.min && level <= rank.max)); }
 function formatTime(total: number) { return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`; }
 
@@ -164,12 +361,13 @@ export function ScoolhackasApp() {
   const [levelUp, setLevelUp] = useState<string | null>(null);
   const [devMode, setDevMode] = useState(false);
   const [resets, setResets] = useState<{ used: number; since: number }>({ used: 0, since: Date.now() });
+  const [questSeed, setQuestSeed] = useState(1);
 
-  const level = levelForXp(xp);
+  const { level, into: levelXp, need: levelNeed } = levelInfo(xp);
   const baseTier = tierForLevel(level);
   const tier = devMode ? ranks.length - 1 : baseTier;
   const rank = ranks[tier] ?? ranks[0];
-  const levelXp = xp % 500;
+  const rankQuests = useMemo(() => pickQuests(tier, questSeed), [tier, questSeed]);
 
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem("scoolhackas-progress") ?? "null") as { xp?: number; completed?: string[] } | null;
@@ -239,7 +437,7 @@ export function ScoolhackasApp() {
   }, [completed]);
 
   const startQuest = (questId: string, seconds: number) => {
-    const quest = quests.find((item) => item.id === questId);
+    const quest = allQuests.find((item) => item.id === questId);
     if (!quest || quest.tier > tier || completed.includes(questId)) return;
     const url = quest.urls[Math.floor(Math.random() * quest.urls.length)] ?? quest.urls[0]!;
     window.open(url, "_blank", "noopener,noreferrer");
@@ -247,7 +445,7 @@ export function ScoolhackasApp() {
   };
   const claimRun = () => {
     if (!run) return;
-    const quest = quests.find((item) => item.id === run.questId);
+    const quest = allQuests.find((item) => item.id === run.questId);
     if (quest) grant(quest.id, quest.xp);
     setRun(null);
   };
@@ -258,8 +456,10 @@ export function ScoolhackasApp() {
     const used = fresh ? 0 : resets.used;
     if (used >= RESET_LIMIT) return;
     setResets({ used: used + 1, since: fresh ? Date.now() : resets.since });
-    setRun(null); setConfirmExit(false); setCompleted([]);
+    setRun(null); setConfirmExit(false);
+    setQuestSeed((value) => value + 1 + Math.floor(Math.random() * 97));
   };
+
 
   const saveProfile = async () => {
     if (!profile.id) return;
@@ -275,13 +475,13 @@ export function ScoolhackasApp() {
     if (profile.id) await supabase.from("profiles").update({ persona, onboarded: true }).eq("id", profile.id);
   };
   const setXpValue = (value: number) => setXp(Math.max(0, Math.round(value)));
-  const jumpToTier = (target: number) => { const min = ranks[target]?.min ?? 1; setXp((min - 1) * 500); };
+  const jumpToTier = (target: number) => { const min = ranks[target]?.min ?? 1; setXp(totalXpForLevel(min)); };
   const resetProgress = () => { setXp(0); setCompleted([]); setRun(null); };
-  const completeAllQuests = () => { setCompleted(quests.map((item) => item.id)); };
+  const completeAllQuests = () => { setCompleted(rankQuests.map((item) => item.id)); };
 
   const signOut = async () => { await supabase.auth.signOut(); await navigate({ to: "/auth", replace: true }); };
 
-  const activeQuest = useMemo(() => quests.find((item) => item.id === run?.questId) ?? null, [run?.questId]);
+  const activeQuest = useMemo(() => allQuests.find((item) => item.id === run?.questId) ?? null, [run?.questId]);
 
   return <div className="min-h-screen bg-background text-foreground">
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
@@ -300,7 +500,7 @@ export function ScoolhackasApp() {
     </header>
 
     <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
-      {tab === "Home" && <HomePanel xp={xp} level={level} levelXp={levelXp} rank={rank.name} tier={tier} completed={completed} run={run} startQuest={startQuest} refreshQuests={refreshQuests} resetsLeft={resetsLeft} resetsAt={resetsAt} />}
+      {tab === "Home" && <HomePanel xp={xp} level={level} levelXp={levelXp} levelNeed={levelNeed} rank={rank.name} tier={tier} quests={rankQuests} completed={completed} run={run} startQuest={startQuest} refreshQuests={refreshQuests} resetsLeft={resetsLeft} resetsAt={resetsAt} onOpenHacks={() => setTab("Hacks")} />
       {tab === "Hacks" && <HacksPanel tier={tier} />}
       {tab === "Proxy" && (tier < PROXY_TIER
         ? <LockedPanel eyebrow="PROXY / UTILITIES" title="Proxy" requirement={`Reach ${TIER_NAMES[PROXY_TIER]} rank (level ${ranks[PROXY_TIER]?.min}) to open the proxy panel.`} />
@@ -375,26 +575,56 @@ function OnboardingOverlay({ theme, finish }: { theme: "dark" | "light"; finish:
   </div>;
 }
 
-function HomePanel({ xp, level, levelXp, rank, tier, completed, run, startQuest, refreshQuests, resetsLeft, resetsAt }: { xp:number; level:number; levelXp:number; rank:string; tier:number; completed:string[]; run:Run|null; startQuest:(id:string, seconds:number)=>void; refreshQuests:()=>void; resetsLeft:number; resetsAt:number }) {
+const trending = [
+  { id: "autoclicker", name: "Auto clicker bookmarklet", tier: 0, heat: "hot", note: "Most saved hack this week — idle games on autopilot." },
+  { id: "historyflood", name: "History flooder", tier: 1, heat: "rising", note: "Buries the back button under hundreds of entries." },
+  { id: "rainbowpage", name: "Rainbow page", tier: 1, heat: "rising", note: "One click turns any page into a colour cycle." },
+  { id: "space", name: "Space proxy", tier: 2, heat: "hot", note: "Games plus a proxy that actually loads. Start here." },
+];
+
+function HomePanel({ xp, level, levelXp, levelNeed, rank, tier, quests, completed, run, startQuest, refreshQuests, resetsLeft, resetsAt, onOpenHacks }: { xp:number; level:number; levelXp:number; levelNeed:number; rank:string; tier:number; quests:QuestDef[]; completed:string[]; run:Run|null; startQuest:(id:string, seconds:number)=>void; refreshQuests:()=>void; resetsLeft:number; resetsAt:number; onOpenHacks:()=>void }) {
+  const doneHere = quests.filter((quest) => completed.includes(quest.id)).length;
   return <div className="animate-in fade-in duration-500">
     <div className="mb-10 flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="section-label">COMMAND CENTER</p><h1 className="page-title">Good evening, hacka.</h1><p className="page-copy">Keep moving. Every quest gets you closer to the next rank.</p></div><div className="rank-chip"><ShieldCheck className="size-4" />{rank}</div></div>
     <section className="mb-12 border-y border-border py-8">
-      <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end"><div><div className="mb-4 flex items-end justify-between"><div><span className="text-sm text-muted-foreground">Current level</span><div className="mt-1 font-display text-5xl font-semibold">{level.toString().padStart(2,"0")}</div></div><div className="text-right"><span className="font-mono text-sm text-foreground">{levelXp} / 500 XP</span><p className="mt-1 text-xs text-muted-foreground">to level {level + 1}</p></div></div><div className="h-2 overflow-hidden rounded-full bg-secondary"><div className="h-full rounded-full bg-primary transition-all duration-700" style={{ width: `${(levelXp / 500) * 100}%` }} /></div></div><div className="grid grid-cols-2 gap-px overflow-hidden rounded-md border border-border bg-border"><Stat label="TOTAL XP" value={xp.toLocaleString()} /><Stat label="QUESTS DONE" value={`${completed.length}/${quests.length}`} /></div></div>
+      <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end"><div><div className="mb-4 flex items-end justify-between"><div><span className="text-sm text-muted-foreground">Current level</span><div className="mt-1 font-display text-5xl font-semibold">{level.toString().padStart(2,"0")}</div></div><div className="text-right"><span className="font-mono text-sm text-foreground">{levelXp} / {levelNeed} XP</span><p className="mt-1 text-xs text-muted-foreground">to level {level + 1}</p></div></div><div className="h-2 overflow-hidden rounded-full bg-secondary"><div className="h-full rounded-full bg-primary transition-all duration-700" style={{ width: `${Math.min(100, (levelXp / levelNeed) * 100)}%` }} /></div></div><div className="grid grid-cols-2 gap-px overflow-hidden rounded-md border border-border bg-border"><Stat label="TOTAL XP" value={xp.toLocaleString()} /><Stat label="QUESTS DONE" value={`${doneHere}/${quests.length}`} /></div></div>
     </section>
-    <div className="mb-5 flex items-center justify-between gap-4"><div><p className="section-label">ACTIVE QUEUE</p><h2 className="mt-1 text-xl font-semibold">Rank quests</h2></div><div className="flex items-center gap-3"><p className="hidden text-xs text-muted-foreground sm:block">{quests.length - completed.length} remaining</p><div className="text-right"><Button variant="outline" size="sm" disabled={resetsLeft <= 0} onClick={refreshQuests}><RotateCw /> Refresh ({Math.max(0, resetsLeft)})</Button><p className="mt-1 text-[11px] text-muted-foreground">{resetsLeft > 0 ? `${resetsLeft} of ${RESET_LIMIT} resets left` : `Resets back at ${new Date(resetsAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`}</p></div></div></div>
-    <div className="divide-y divide-border border-y border-border">{quests.map((quest, index) => {
+
+    <section className="mb-12">
+      <div className="mb-5 flex items-center justify-between gap-4"><div><p className="section-label">RIGHT NOW</p><h2 className="mt-1 flex items-center gap-2 text-xl font-semibold"><TrendingUp className="size-5 text-accent" /> Trending hacks</h2></div><Button variant="ghost" size="sm" onClick={onOpenHacks}>Browse all</Button></div>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{trending.map((item) => {
+        const locked = item.tier > tier;
+        return <button key={item.id} type="button" onClick={onOpenHacks} className="group rounded-lg border border-border bg-card/50 p-4 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-foreground/25 hover:bg-card">
+          <div className="mb-3 flex items-center justify-between"><span className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wide ${item.heat === "hot" ? "border-accent/40 text-accent" : "border-border text-muted-foreground"}`}>{item.heat === "hot" ? <Flame className="size-3" /> : <TrendingUp className="size-3" />}{item.heat}</span>{locked && <LockKeyhole className="size-3.5 text-muted-foreground" />}</div>
+          <h3 className="text-sm font-medium">{item.name}</h3>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{locked ? `Unlocks at ${TIER_NAMES[item.tier]} rank.` : item.note}</p>
+        </button>;
+      })}</div>
+    </section>
+
+    <div className="mb-5 flex items-center justify-between gap-4"><div><p className="section-label">ACTIVE QUEUE</p><h2 className="mt-1 text-xl font-semibold">{TIER_NAMES[tier]} quests</h2></div><div className="flex items-center gap-3"><p className="hidden text-xs text-muted-foreground sm:block">{quests.length - doneHere} remaining</p><div className="text-right"><Button variant="outline" size="sm" disabled={resetsLeft <= 0} onClick={refreshQuests}><RotateCw /> Refresh ({Math.max(0, resetsLeft)})</Button><p className="mt-1 text-[11px] text-muted-foreground">{resetsLeft > 0 ? `${resetsLeft} of ${RESET_LIMIT} resets left` : `Resets back at ${new Date(resetsAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`}</p></div></div></div>
+    <div className="grid gap-3 lg:grid-cols-2">{quests.map((quest, index) => {
       const done = completed.includes(quest.id);
       const locked = quest.tier > tier;
       const active = run?.questId === quest.id;
-      return <div key={quest.id} className={`grid gap-4 py-5 sm:grid-cols-[40px_1fr_auto] sm:items-center ${locked ? "opacity-60" : ""}`}>
-        <div className={`grid size-10 place-items-center rounded-md border ${done ? "border-success/40 bg-success/10 text-success" : "border-border bg-secondary text-muted-foreground"}`}>{done ? <Check className="size-4" /> : locked ? <LockKeyhole className="size-4" /> : <span className="font-mono text-xs">0{index+1}</span>}</div>
-        <div>
-          <div className="mb-1 flex flex-wrap items-center gap-2"><h3 className="font-medium">{quest.title}</h3><span className="tier-label">{TIER_NAMES[quest.tier]}</span></div>
-          <p className="text-sm text-muted-foreground">{done ? "Quest complete" : locked ? `Locked — reach ${TIER_NAMES[quest.tier]} rank (level ${ranks[quest.tier]?.min}) to attempt this.` : active ? "Running…" : `Earn ${quest.xp} XP`}</p>
+      return <div key={quest.id} className={`group relative overflow-hidden rounded-lg border p-5 transition-all duration-300 ${done ? "border-success/30 bg-success/5" : active ? "border-primary/50 bg-primary/5" : "border-border bg-card/40 hover:-translate-y-0.5 hover:border-foreground/25 hover:bg-card"} ${locked ? "opacity-60" : ""}`}>
+        <div className="flex items-start gap-4">
+          <div className={`grid size-11 shrink-0 place-items-center rounded-md border ${done ? "border-success/40 bg-success/10 text-success" : active ? "border-primary/40 bg-primary/10 text-primary" : "border-border bg-secondary text-muted-foreground"}`}>{done ? <Check className="size-4" /> : locked ? <LockKeyhole className="size-4" /> : <Zap className="size-4" />}</div>
+          <div className="min-w-0 flex-1">
+            <div className="mb-1 flex flex-wrap items-center gap-2"><span className="font-mono text-[11px] text-muted-foreground">Q{String(index + 1).padStart(2, "0")}</span><h3 className="font-medium">{quest.title}</h3></div>
+            <p className="text-sm leading-relaxed text-muted-foreground">{locked ? `Locked — reach ${TIER_NAMES[quest.tier]} rank (level ${ranks[quest.tier]?.min}) to attempt this.` : quest.detail}</p>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <span className="flex items-center gap-1 rounded-full border border-accent/40 px-2.5 py-0.5 font-mono text-[11px] text-accent"><Sparkles className="size-3" /> +{quest.xp} XP</span>
+              <span className="flex items-center gap-1 rounded-full border border-border px-2.5 py-0.5 font-mono text-[11px] text-muted-foreground"><Clock3 className="size-3" /> {formatTime(quest.seconds)}</span>
+              <span className="tier-label">{TIER_NAMES[quest.tier]}</span>
+              <div className="ml-auto">
+                {done ? <span className="font-mono text-xs text-success">Complete</span>
+                  : locked ? <span className="flex items-center gap-2 text-xs text-muted-foreground"><LockKeyhole className="size-3" /> Locked</span>
+                  : <Button size="sm" variant={active ? "default" : "outline"} disabled={!!run} onClick={()=>startQuest(quest.id, quest.seconds)}>{active ? "Running…" : "Go"} <Play /></Button>}
+              </div>
+            </div>
+          </div>
         </div>
-        {done ? <span className="font-mono text-xs text-success">+{quest.xp} XP</span>
-          : locked ? <span className="flex items-center gap-2 text-xs text-muted-foreground"><LockKeyhole className="size-3" /> Locked</span>
-          : <Button size="sm" variant="outline" disabled={!!run} onClick={()=>startQuest(quest.id, quest.seconds)}>Go <Play /></Button>}
       </div>;
     })}</div>
   </div>;

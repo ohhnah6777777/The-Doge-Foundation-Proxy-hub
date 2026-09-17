@@ -387,6 +387,37 @@ function HacksPanel({ tier }: { tier: number }) {
   </section>;
 }
 
+function ProxyPanel() {
+  return <section className="animate-in fade-in duration-500">
+    <p className="section-label">PROXY / UTILITIES</p>
+    <h1 className="page-title">Proxy</h1>
+    <p className="page-copy">Unblocked sites and game hubs. If one link stops working, try the alternates.</p>
+    <div className="mt-10 grid gap-5 lg:grid-cols-2">{proxyLibrary.map((proxy) => <ProxyCard key={proxy.id} proxy={proxy} />)}</div>
+  </section>;
+}
+
+function ProxyCard({ proxy }: { proxy: ProxyEntry }) {
+  const tone = proxy.status === "working" ? "border-success/40 bg-success/10 text-success"
+    : proxy.status === "partial" ? "border-accent/40 bg-accent/10 text-accent"
+    : "border-destructive/40 bg-destructive/10 text-destructive";
+  return <article className="flex flex-col rounded-lg border border-border bg-card p-6">
+    <div className="flex items-start gap-4">
+      <img src={proxy.icon} alt={`${proxy.name} logo`} loading="lazy" referrerPolicy="no-referrer" className="size-12 shrink-0 rounded-md border border-border bg-secondary object-contain p-1" />
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2"><h3 className="font-semibold">{proxy.name}</h3><span className={`rounded-full border px-2 py-0.5 font-mono text-[10px] ${tone}`}>{proxyStatusLabel[proxy.status]}</span></div>
+        <p className="mt-1 text-sm text-muted-foreground">{proxy.description}</p>
+      </div>
+    </div>
+    <div className="mt-5 border-t border-border pt-5">
+      <p className="font-mono text-[10px] tracking-widest text-muted-foreground">LINKS</p>
+      <ul className="mt-3 divide-y divide-border">{proxy.links.map((link) => <li key={link.url} className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
+        <div className="min-w-0"><p className="text-sm font-medium">{link.label}</p><p className="truncate text-xs text-muted-foreground">{link.note}</p></div>
+        <a href={link.url} target="_blank" rel="noopener noreferrer" className="inline-flex shrink-0 items-center gap-2 text-sm font-medium text-primary hover:underline"><Link2 className="size-4" /> Open</a>
+      </li>)}</ul>
+    </div>
+  </article>;
+}
+
 function HackCard({ hack }: { hack: HackEntry }) {
   return <article className="rounded-lg border border-border bg-card p-6">
     <div className="flex items-start gap-4">

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Award, Bookmark, Braces, Check, CircleUserRound, Clock3, Code2, House, Link2, LockKeyhole, LogOut, Mail, Moon, Network, Orbit, Pencil, Play, RotateCw, Send, ShieldCheck, Sliders, Sparkles, Sun, UserRound, X } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -483,22 +482,26 @@ function AdminEntry() {
   const [open, setOpen] = useState(false);
   const [code, setCode] = useState("");
   const [unlocked, setUnlocked] = useState(false);
+  const close = () => { setOpen(false); setCode(""); setUnlocked(false); };
   return <>
     <button type="button" onClick={() => setOpen(true)} aria-label="admin panel"
       className="fixed bottom-3 left-3 z-40 flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] text-muted-foreground opacity-[0.07] transition-opacity duration-300 hover:opacity-70 focus-visible:opacity-70 focus-visible:outline-none">
       <Sliders className="size-3" /> admin panel
     </button>
-    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setCode(""); setUnlocked(false); } }}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>admin panel</DialogTitle>
-          <DialogDescription>{unlocked ? "Owner tools. Nothing wired up here yet." : "Restricted area. Enter the access code."}</DialogDescription>
-        </DialogHeader>
+    {open && <div className="fixed inset-0 z-50 grid place-items-center bg-background/80 p-4 backdrop-blur-sm animate-in fade-in" onClick={close}>
+      <div className="w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <div>
+            <h2 className="font-semibold">admin panel</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{unlocked ? "Owner tools. Nothing wired up here yet." : "Restricted area. Enter the access code."}</p>
+          </div>
+          <Button variant="ghost" size="icon" onClick={close} aria-label="Close"><X /></Button>
+        </div>
         {unlocked
           ? <div className="grid min-h-32 place-items-center rounded-md border border-dashed border-border"><p className="text-sm text-muted-foreground">No admin tools yet</p></div>
-          : <div className="flex gap-2"><Input type="password" value={code} onChange={(e) => setCode(e.target.value)} placeholder="access code" onKeyDown={(e) => { if (e.key === "Enter" && code === "hacka") setUnlocked(true); }} /><Button onClick={() => { if (code === "hacka") setUnlocked(true); }}>Enter</Button></div>}
-      </DialogContent>
-    </Dialog>
+          : <div className="flex gap-2"><Input autoFocus type="password" value={code} onChange={(e) => setCode(e.target.value)} placeholder="access code" onKeyDown={(e) => { if (e.key === "Enter" && code === "hacka") setUnlocked(true); }} /><Button onClick={() => { if (code === "hacka") setUnlocked(true); }}>Enter</Button></div>}
+      </div>
+    </div>}
   </>;
 }
 function Preference({icon:Icon,title,description,control}:{icon:typeof Moon;title:string;description:string;control:React.ReactNode}) { return <div className="flex items-center gap-3 py-5 first:pt-0 last:pb-0"><Icon className="size-4 text-muted-foreground"/><div className="flex-1"><p className="text-sm font-medium">{title}</p><p className="text-xs text-muted-foreground">{description}</p></div>{control}</div>; }

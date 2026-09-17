@@ -500,7 +500,7 @@ export function ScoolhackasApp() {
     </header>
 
     <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
-      {tab === "Home" && <HomePanel xp={xp} level={level} levelXp={levelXp} rank={rank.name} tier={tier} completed={completed} run={run} startQuest={startQuest} refreshQuests={refreshQuests} resetsLeft={resetsLeft} resetsAt={resetsAt} />}
+      {tab === "Home" && <HomePanel xp={xp} level={level} levelXp={levelXp} levelNeed={levelNeed} rank={rank.name} tier={tier} quests={rankQuests} completed={completed} run={run} startQuest={startQuest} refreshQuests={refreshQuests} resetsLeft={resetsLeft} resetsAt={resetsAt} onOpenHacks={() => setTab("Hacks")} />
       {tab === "Hacks" && <HacksPanel tier={tier} />}
       {tab === "Proxy" && (tier < PROXY_TIER
         ? <LockedPanel eyebrow="PROXY / UTILITIES" title="Proxy" requirement={`Reach ${TIER_NAMES[PROXY_TIER]} rank (level ${ranks[PROXY_TIER]?.min}) to open the proxy panel.`} />

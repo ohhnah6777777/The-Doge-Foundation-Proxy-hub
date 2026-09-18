@@ -800,12 +800,12 @@ function AdminEntry({ admin }: { admin: AdminState }) {
               <div className="rounded-md border border-border p-4">
                 <p className="text-xs font-medium text-muted-foreground">JUMP TO RANK</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {ranks.map((item, index) => <Button key={item.name} size="sm" variant={admin.baseRank === item.name ? "default" : "outline"} onClick={() => { admin.jumpToTier(index); setXpDraft(String(((ranks[index]?.min ?? 1) - 1) * 500)); }}>{item.name}</Button>)}
+                  {ranks.map((item, index) => <Button key={item.name} size="sm" variant={admin.baseRank === item.name ? "default" : "outline"} onClick={() => { admin.jumpToTier(index); setXpDraft(String(totalXpForLevel(ranks[index]?.min ?? 1))); }}>{item.name}</Button>)}
                 </div>
               </div>
 
               <div className="rounded-md border border-border p-4">
-                <p className="text-xs font-medium text-muted-foreground">QUESTS · {admin.completed}/{quests.length} COMPLETE</p>
+                <p className="text-xs font-medium text-muted-foreground">QUESTS · {admin.completed} COMPLETE</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Button size="sm" variant="secondary" onClick={admin.completeAllQuests}><Check /> Complete all</Button>
                   <Button size="sm" variant="outline" onClick={() => { admin.resetProgress(); setXpDraft("0"); }}><RotateCw /> Reset progress</Button>

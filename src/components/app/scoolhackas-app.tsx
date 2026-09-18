@@ -500,7 +500,7 @@ export function ScoolhackasApp() {
     </header>
 
     <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
-      {tab === "Home" && <HomePanel xp={xp} level={level} levelXp={levelXp} levelNeed={levelNeed} rank={rank.name} tier={tier} quests={rankQuests} completed={completed} run={run} startQuest={startQuest} refreshQuests={refreshQuests} resetsLeft={resetsLeft} resetsAt={resetsAt} onOpenHacks={() => setTab("Hacks")} />
+      {tab === "Home" && <HomePanel xp={xp} level={level} levelXp={levelXp} levelNeed={levelNeed} rank={rank.name} tier={tier} quests={rankQuests} completed={completed} run={run} startQuest={startQuest} refreshQuests={refreshQuests} resetsLeft={resetsLeft} resetsAt={resetsAt} onOpenHacks={() => setTab("Hacks")} />}
       {tab === "Hacks" && <HacksPanel tier={tier} />}
       {tab === "Proxy" && (tier < PROXY_TIER
         ? <LockedPanel eyebrow="PROXY / UTILITIES" title="Proxy" requirement={`Reach ${TIER_NAMES[PROXY_TIER]} rank (level ${ranks[PROXY_TIER]?.min}) to open the proxy panel.`} />
@@ -681,11 +681,12 @@ function ProxyCard({ proxy }: { proxy: ProxyEntry }) {
 }
 
 function HackCard({ hack }: { hack: HackEntry }) {
+  const [copied, setCopied] = useState(false);
   return <article className="rounded-lg border border-border bg-card p-6">
     <div className="flex items-start gap-4">
       {hack.image
-        ? <img src={hack.image} alt="Pixelated arrow cursor icon" loading="lazy" width={816} height={816} className="size-12 shrink-0 rounded-md border border-border bg-white object-contain p-1" />
-        : <span className="grid size-12 shrink-0 place-items-center rounded-md border border-border bg-secondary"><Pencil className="size-5 text-muted-foreground" /></span>}
+        ? <img src={hack.image} alt={`${hack.name} icon`} loading="lazy" width={816} height={816} className="size-12 shrink-0 rounded-md border border-border bg-white object-contain p-1" />
+        : <span className="grid size-12 shrink-0 place-items-center rounded-md border border-border bg-secondary">{hack.code ? <Code2 className="size-5 text-muted-foreground" /> : <Pencil className="size-5 text-muted-foreground" />}</span>}
       <div className="min-w-0">
         <h3 className="font-semibold">{hack.name}</h3>
         <p className="mt-1 text-sm text-muted-foreground">{hack.description}</p>
@@ -694,7 +695,11 @@ function HackCard({ hack }: { hack: HackEntry }) {
     <div className="mt-5 border-t border-border pt-5">
       <p className="font-mono text-[10px] tracking-widest text-muted-foreground">INSTRUCTIONS</p>
       <ol className="mt-3 space-y-2 text-sm text-muted-foreground">{hack.steps.map((step, index) => <li key={step} className="flex gap-3"><span className="font-mono text-xs text-accent">{String(index + 1).padStart(2, "0")}</span><span>{step}</span></li>)}</ol>
-      <a href={hack.url} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"><Link2 className="size-4" /> Open the source</a>
+      {hack.code && <div className="mt-5">
+        <div className="mb-2 flex items-center justify-between gap-3"><p className="font-mono text-[10px] tracking-widest text-muted-foreground">SCRIPT</p><Button size="sm" variant="outline" onClick={() => { void navigator.clipboard.writeText(hack.code!); setCopied(true); window.setTimeout(() => setCopied(false), 1800); }}>{copied ? <Check /> : <Copy />} {copied ? "Copied" : "Copy code"}</Button></div>
+        <pre className="scrollbar-none max-h-32 overflow-auto rounded-md border border-border bg-secondary/50 p-3 font-mono text-[11px] leading-relaxed text-muted-foreground"><code>{hack.code}</code></pre>
+      </div>}
+      {hack.url && <a href={hack.url} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"><Link2 className="size-4" /> Open the source</a>}
     </div>
   </article>;
 }
@@ -795,12 +800,12 @@ function AdminEntry({ admin }: { admin: AdminState }) {
               <div className="rounded-md border border-border p-4">
                 <p className="text-xs font-medium text-muted-foreground">JUMP TO RANK</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {ranks.map((item, index) => <Button key={item.name} size="sm" variant={admin.baseRank === item.name ? "default" : "outline"} onClick={() => { admin.jumpToTier(index); setXpDraft(String(((ranks[index]?.min ?? 1) - 1) * 500)); }}>{item.name}</Button>)}
+                  {ranks.map((item, index) => <Button key={item.name} size="sm" variant={admin.baseRank === item.name ? "default" : "outline"} onClick={() => { admin.jumpToTier(index); setXpDraft(String(totalXpForLevel(ranks[index]?.min ?? 1))); }}>{item.name}</Button>)}
                 </div>
               </div>
 
               <div className="rounded-md border border-border p-4">
-                <p className="text-xs font-medium text-muted-foreground">QUESTS · {admin.completed}/{quests.length} COMPLETE</p>
+                <p className="text-xs font-medium text-muted-foreground">QUESTS · {admin.completed} COMPLETE</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Button size="sm" variant="secondary" onClick={admin.completeAllQuests}><Check /> Complete all</Button>
                   <Button size="sm" variant="outline" onClick={() => { admin.resetProgress(); setXpDraft("0"); }}><RotateCw /> Reset progress</Button>

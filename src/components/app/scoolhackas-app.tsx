@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
+import { claimAdmin, getMyAdminStatus, grantAdmin, listAdmins } from "@/lib/admin.functions";
 import { bubbleLetters, calculator, drawOnScreen, historyFlooder, rainbowPage } from "@/lib/hack-scripts";
 import autoclickerIcon from "@/assets/hack-autoclicker.png";
 import historyIcon from "@/assets/hack-history-water.png";

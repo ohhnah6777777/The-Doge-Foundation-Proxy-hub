@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Award, Bookmark, Braces, Check, CircleUserRound, Clock3, Code2, Copy, Flame, House, Link2, LockKeyhole, LogOut, Mail, Moon, Network, Orbit, Pencil, Play, RotateCw, Send, ShieldCheck, Sliders, Sparkles, Sun, TrendingUp, UserRound, X, Zap } from "lucide-react";
+import { Award, Bookmark, Braces, Check, CircleUserRound, Clock3, Code2, Copy, Flame, House, KeyRound, Link2, LockKeyhole, LogOut, Mail, Moon, Network, Orbit, Pencil, Play, RotateCw, Send, ShieldCheck, Sliders, Sparkles, Sun, TrendingUp, UserRound, X, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";

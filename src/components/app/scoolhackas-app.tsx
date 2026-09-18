@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Award, Bookmark, Braces, Check, CircleUserRound, Clock3, Code2, Copy, Flame, House, Link2, LockKeyhole, LogOut, Mail, Moon, Network, Orbit, Pencil, Play, RotateCw, Send, ShieldCheck, Sliders, Sparkles, Sun, TrendingUp, UserRound, X, Zap } from "lucide-react";
+import { Award, Bookmark, Braces, Check, CircleUserRound, Clock3, Code2, Copy, Flame, House, KeyRound, Link2, LockKeyhole, LogOut, Mail, Moon, Network, Orbit, Pencil, Play, RotateCw, Send, ShieldCheck, Sliders, Sparkles, Sun, TrendingUp, UserRound, X, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
+import { claimAdmin, getMyAdminStatus, grantAdmin, listAdmins } from "@/lib/admin.functions";
 import { bubbleLetters, calculator, drawOnScreen, historyFlooder, rainbowPage } from "@/lib/hack-scripts";
 import autoclickerIcon from "@/assets/hack-autoclicker.png";
 import historyIcon from "@/assets/hack-history-water.png";
@@ -758,8 +759,38 @@ function AdminEntry({ admin }: { admin: AdminState }) {
   const [code, setCode] = useState("");
   const [unlocked, setUnlocked] = useState(false);
   const [xpDraft, setXpDraft] = useState(String(admin.xp));
-  const close = () => { setOpen(false); setCode(""); setUnlocked(false); };
-  const tryUnlock = () => { if (code === "hacka") { setUnlocked(true); setXpDraft(String(admin.xp)); } };
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [grantEmail, setGrantEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+  const [admins, setAdmins] = useState<{ id: string; email: string }[]>([]);
+
+  const checkAdmin = useCallback(async () => {
+    try {
+      const result = await getMyAdminStatus();
+      setIsAdmin(result.isAdmin);
+      if (result.isAdmin) { setUnlocked(true); const roster = await listAdmins(); setAdmins(roster.admins); }
+    } catch { setIsAdmin(false); }
+  }, []);
+
+  useEffect(() => { if (open) void checkAdmin(); }, [open, checkAdmin]);
+
+  const close = () => { setOpen(false); setCode(""); setGrantEmail(""); setNote(null); setUnlocked(isAdmin); };
+  const tryUnlock = () => { if (code === "hacka") { setUnlocked(true); setXpDraft(String(admin.xp)); } else setNote("That access code is not valid."); };
+
+  const claim = async () => {
+    setBusy(true); setNote(null);
+    try { const result = await claimAdmin({ data: { code } }); setNote(result.message); if (result.ok) await checkAdmin(); }
+    catch { setNote("Could not reach the server. Try again."); }
+    setBusy(false);
+  };
+  const grant = async () => {
+    setBusy(true); setNote(null);
+    try { const result = await grantAdmin({ data: { email: grantEmail } }); setNote(result.message); if (result.ok) { setGrantEmail(""); const roster = await listAdmins(); setAdmins(roster.admins); } }
+    catch { setNote("Could not reach the server. Try again."); }
+    setBusy(false);
+  };
+
   return <>
     <button type="button" onClick={() => setOpen(true)} aria-label="admin panel"
       className="fixed bottom-3 left-3 z-40 flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] text-muted-foreground opacity-[0.07] transition-opacity duration-300 hover:opacity-70 focus-visible:opacity-70 focus-visible:outline-none">
@@ -769,13 +800,39 @@ function AdminEntry({ admin }: { admin: AdminState }) {
       <div className="w-full max-w-lg rounded-lg border border-border bg-card p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
-            <h2 className="font-semibold">admin panel</h2>
+            <h2 className="flex items-center gap-2 font-semibold">admin panel {isAdmin && <span className="rounded-full border border-accent/40 px-2 py-0.5 text-[10px] uppercase tracking-wide text-accent">admin</span>}</h2>
             <p className="mt-1 text-sm text-muted-foreground">{unlocked ? "Owner tools. Changes apply instantly." : "Restricted area. Enter the access code."}</p>
           </div>
           <Button variant="ghost" size="icon" onClick={close} aria-label="Close"><X /></Button>
         </div>
+        {note && <p className="mb-4 rounded-md border border-border bg-secondary/50 px-3 py-2 text-xs text-muted-foreground">{note}</p>}
         {!unlocked
-          ? <div className="flex gap-2"><Input autoFocus type="password" value={code} onChange={(e) => setCode(e.target.value)} placeholder="access code" onKeyDown={(e) => { if (e.key === "Enter") tryUnlock(); }} /><Button onClick={tryUnlock}>Enter</Button></div>
+          ? <div className="space-y-3">
+              <div className="flex gap-2"><Input autoFocus type="password" value={code} onChange={(e) => setCode(e.target.value)} placeholder="access code" onKeyDown={(e) => { if (e.key === "Enter") tryUnlock(); }} /><Button onClick={tryUnlock}>Enter</Button></div>
+              <Button variant="outline" className="w-full" disabled={busy || !code} onClick={() => void claim()}><KeyRound /> Get admin abilities</Button>
+              <p className="text-[11px] text-muted-foreground">The access code unlocks the tools on this device. &ldquo;Get admin abilities&rdquo; permanently links admin rights to your signed-in account.</p>
+            </div>
+          : <div className="space-y-5">
+              <div className="rounded-md border border-border p-4">
+                <p className="text-xs font-medium text-muted-foreground">ADMIN ACCOUNT</p>
+                {isAdmin
+                  ? <>
+                      <p className="mt-2 text-sm">This account has admin abilities.</p>
+                      <div className="mt-3 flex gap-2">
+                        <Input value={grantEmail} type="email" placeholder="email of the account" onChange={(e) => setGrantEmail(e.target.value)} />
+                        <Button disabled={busy || !grantEmail} onClick={() => void grant()}><UserRound /> Give administration abilities to…</Button>
+                      </div>
+                      {admins.length > 0 && <p className="mt-3 text-[11px] text-muted-foreground">Current admins: {admins.map((item) => item.email).join(", ")}</p>}
+                    </>
+                  : <>
+                      <p className="mt-2 text-sm text-muted-foreground">Link admin rights to your signed-in account so they follow you on any device.</p>
+                      <div className="mt-3 flex gap-2">
+                        <Input type="password" value={code} placeholder="access code" onChange={(e) => setCode(e.target.value)} />
+                        <Button disabled={busy || !code} onClick={() => void claim()}><KeyRound /> Get admin abilities</Button>
+                      </div>
+                    </>}
+              </div>
+
           : <div className="space-y-5">
               <div className="flex items-center gap-3 rounded-md border border-border p-4">
                 <Sliders className="size-4 text-muted-foreground" />

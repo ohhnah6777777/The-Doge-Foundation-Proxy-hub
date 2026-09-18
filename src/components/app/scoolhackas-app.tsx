@@ -681,11 +681,12 @@ function ProxyCard({ proxy }: { proxy: ProxyEntry }) {
 }
 
 function HackCard({ hack }: { hack: HackEntry }) {
+  const [copied, setCopied] = useState(false);
   return <article className="rounded-lg border border-border bg-card p-6">
     <div className="flex items-start gap-4">
       {hack.image
-        ? <img src={hack.image} alt="Pixelated arrow cursor icon" loading="lazy" width={816} height={816} className="size-12 shrink-0 rounded-md border border-border bg-white object-contain p-1" />
-        : <span className="grid size-12 shrink-0 place-items-center rounded-md border border-border bg-secondary"><Pencil className="size-5 text-muted-foreground" /></span>}
+        ? <img src={hack.image} alt={`${hack.name} icon`} loading="lazy" width={816} height={816} className="size-12 shrink-0 rounded-md border border-border bg-white object-contain p-1" />
+        : <span className="grid size-12 shrink-0 place-items-center rounded-md border border-border bg-secondary">{hack.code ? <Code2 className="size-5 text-muted-foreground" /> : <Pencil className="size-5 text-muted-foreground" />}</span>}
       <div className="min-w-0">
         <h3 className="font-semibold">{hack.name}</h3>
         <p className="mt-1 text-sm text-muted-foreground">{hack.description}</p>

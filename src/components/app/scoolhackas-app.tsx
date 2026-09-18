@@ -694,7 +694,11 @@ function HackCard({ hack }: { hack: HackEntry }) {
     <div className="mt-5 border-t border-border pt-5">
       <p className="font-mono text-[10px] tracking-widest text-muted-foreground">INSTRUCTIONS</p>
       <ol className="mt-3 space-y-2 text-sm text-muted-foreground">{hack.steps.map((step, index) => <li key={step} className="flex gap-3"><span className="font-mono text-xs text-accent">{String(index + 1).padStart(2, "0")}</span><span>{step}</span></li>)}</ol>
-      <a href={hack.url} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"><Link2 className="size-4" /> Open the source</a>
+      {hack.code && <div className="mt-5">
+        <div className="mb-2 flex items-center justify-between gap-3"><p className="font-mono text-[10px] tracking-widest text-muted-foreground">SCRIPT</p><Button size="sm" variant="outline" onClick={() => { void navigator.clipboard.writeText(hack.code!); setCopied(true); window.setTimeout(() => setCopied(false), 1800); }}>{copied ? <Check /> : <Copy />} {copied ? "Copied" : "Copy code"}</Button></div>
+        <pre className="scrollbar-none max-h-32 overflow-auto rounded-md border border-border bg-secondary/50 p-3 font-mono text-[11px] leading-relaxed text-muted-foreground"><code>{hack.code}</code></pre>
+      </div>}
+      {hack.url && <a href={hack.url} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"><Link2 className="size-4" /> Open the source</a>}
     </div>
   </article>;
 }

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ScoolhackasApp } from "@/components/app/scoolhackas-app";
+import { ScoolhackasApp } from "@/components/app/doge-foundation-app";
 
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({ meta: [

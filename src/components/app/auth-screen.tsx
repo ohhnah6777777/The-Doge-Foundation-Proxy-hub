@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Braces, Chrome, LoaderCircle, LockKeyhole } from "lucide-react";
+import { ArrowRight, Chrome, LoaderCircle, LockKeyhole } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { lovable } from "@/integrations/lovable";
 import { supabase } from "@/integrations/supabase/client";
+import dogeMark from "@/assets/doge-foundation-mark.png";
 
 export function AuthScreen() {
   const navigate = useNavigate();
@@ -51,15 +52,15 @@ export function AuthScreen() {
         <section className="grid w-full gap-14 lg:grid-cols-[1.15fr_.85fr] lg:items-center">
           <div className="max-w-2xl">
             <div className="mb-10 flex items-center gap-3 font-display text-lg font-semibold tracking-normal">
-              <span className="grid size-9 place-items-center rounded-md border border-border bg-secondary"><Braces className="size-4" /></span>
-              scoolhackas
+              <span className="grid size-10 place-items-center overflow-hidden rounded-md border border-border bg-secondary"><img src={dogeMark} alt="Doge" className="h-full w-full object-contain" /></span>
+              The Doge Foundation
             </div>
-            <p className="mb-5 font-mono text-xs uppercase tracking-[0.18em] text-accent">progress console / v1.0</p>
+            <p className="mb-5 font-mono text-xs uppercase text-primary">open directory / v2.0</p>
             <h1 className="max-w-xl font-display text-5xl font-semibold leading-[1.02] tracking-normal sm:text-7xl">
-              Level up your digital toolkit.
+              The open toolkit for curious minds.
             </h1>
             <p className="mt-6 max-w-lg text-base leading-7 text-muted-foreground sm:text-lg">
-              A focused workspace for quests, rank progress, utilities, and your personal collection.
+              Explore the complete collection of proxies, bookmarklets, game routes, quests, and useful tools.
             </p>
             <div className="mt-10 flex items-center gap-3 text-sm text-muted-foreground">
               <LockKeyhole className="size-4 text-success" /> Your account data stays private.
@@ -70,7 +71,7 @@ export function AuthScreen() {
             <div className="mb-7">
               <p className="font-mono text-xs text-muted-foreground">SECURE ACCESS</p>
               <h2 className="mt-2 text-2xl font-semibold">{mode === "signin" ? "Welcome back" : "Create your account"}</h2>
-              <p className="mt-2 text-sm text-muted-foreground">{mode === "signin" ? "Sign in to continue your progress." : "Start at beginner hacka and work your way up."}</p>
+               <p className="mt-2 text-sm text-muted-foreground">{mode === "signin" ? "Sign in to open your personal directory." : "Create an account with complete access from day one."}</p>
             </div>
             <Button variant="outline" className="h-11 w-full" onClick={googleSignIn} disabled={busy}>
               <Chrome /> Continue with Google

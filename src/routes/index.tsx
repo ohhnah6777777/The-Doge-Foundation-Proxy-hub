@@ -11,10 +11,10 @@ export const Route = createFileRoute("/")({
   },
   head: () => ({
     meta: [
-      { title: "scoolhackas — progress console" },
-      { name: "description", content: "A focused dashboard for quests, rank progress, and personal utilities." },
-      { property: "og:title", content: "scoolhackas — progress console" },
-      { property: "og:description", content: "A focused dashboard for quests, rank progress, and personal utilities." },
+      { title: "The Doge Foundation — open toolkit" },
+      { name: "description", content: "Explore an open directory of proxies, bookmarklets, games, quests, and useful tools." },
+      { property: "og:title", content: "The Doge Foundation — open toolkit" },
+      { property: "og:description", content: "Explore an open directory of proxies, bookmarklets, games, quests, and useful tools." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

@@ -8,10 +8,10 @@ export const Route = createFileRoute("/auth")({
     if (data.user) throw redirect({ to: "/app" });
   },
   head: () => ({ meta: [
-    { title: "sign in — scoolhackas" },
-    { name: "description", content: "Sign in or create your scoolhackas account." },
-    { property: "og:title", content: "sign in — scoolhackas" },
-    { property: "og:description", content: "Sign in or create your scoolhackas account." },
+    { title: "Sign in — The Doge Foundation" },
+    { name: "description", content: "Sign in or create your account for The Doge Foundation." },
+    { property: "og:title", content: "Sign in — The Doge Foundation" },
+    { property: "og:description", content: "Sign in or create your account for The Doge Foundation." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },
   ] }),

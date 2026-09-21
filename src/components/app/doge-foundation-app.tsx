@@ -71,7 +71,7 @@ function pickQuests(seed: number) {
     .map(({ quest }) => quest);
 }
 
-export function ScoolhackasApp() {
+export function DogeFoundationApp() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("Home");
   const [theme, setTheme] = useState<"dark" | "light">("light");

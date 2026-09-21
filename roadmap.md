@@ -4,4 +4,4 @@
 - [x] Rebuild the app without ranks, XP gating, developer mode, or admin panel
 - [x] Add all supplied proxies and quick links
 - [x] Update the warm brown theme, auth screen, and metadata
-- [ ] Verify build and desktop/mobile rendering
+- [x] Verify build and desktop/mobile rendering

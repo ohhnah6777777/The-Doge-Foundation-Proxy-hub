@@ -79,7 +79,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "The Doge Foundation" },
-      { name: "description", content: "An open directory for proxies, bookmarklets, games, quests, and useful tools." },
+       { name: "description", content: "An open directory for proxies, bookmarklets, games, and useful tools." },
       { name: "author", content: "The Doge Foundation" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

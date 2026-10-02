@@ -60,7 +60,7 @@ export function AuthScreen() {
               The open toolkit for curious minds.
             </h1>
             <p className="mt-6 max-w-lg text-base leading-7 text-muted-foreground sm:text-lg">
-              Explore the complete collection of proxies, bookmarklets, game routes, quests, and useful tools.
+              Explore the complete collection of proxies, bookmarklets, game routes, and useful tools.
             </p>
             <div className="mt-10 flex items-center gap-3 text-sm text-muted-foreground">
               <LockKeyhole className="size-4 text-success" /> Your account data stays private.

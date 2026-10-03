@@ -11,3 +11,6 @@
 - [x] Replace Truffle with Truffled in its original slot
 - [x] Verify directory and mobile layout
 - [x] Apply routine package update and verify build
+- [x] Replace inline proxy links with a dedicated links panel
+- [x] Add Launch buttons to proxy routes and quick links
+- [x] Add the supplied Blooket bookmarklet as copy-only text

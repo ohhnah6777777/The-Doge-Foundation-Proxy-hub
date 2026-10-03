@@ -6,7 +6,8 @@
 - [x] Update the warm brown theme, auth screen, and metadata
 - [x] Verify build and desktop/mobile rendering
 
-- [ ] Remove quests and quest references throughout the app
-- [ ] Replace proxy icons with supplied banners, leaving unsupplied entries text-only
-- [ ] Replace Truffle with Truffled in its original slot
-- [ ] Verify directory, mobile layout, and routine package update
+- [x] Remove quests and quest references throughout the app
+- [x] Replace proxy icons with supplied banners, leaving unsupplied entries text-only
+- [x] Replace Truffle with Truffled in its original slot
+- [x] Verify directory and mobile layout
+- [ ] Apply routine package update and verify build

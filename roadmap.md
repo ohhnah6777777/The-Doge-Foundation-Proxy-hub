@@ -10,4 +10,4 @@
 - [x] Replace proxy icons with supplied banners, leaving unsupplied entries text-only
 - [x] Replace Truffle with Truffled in its original slot
 - [x] Verify directory and mobile layout
-- [ ] Apply routine package update and verify build
+- [x] Apply routine package update and verify build

@@ -47,17 +47,17 @@ export function AuthScreen() {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-background text-foreground">
-      <div className="auth-grid absolute inset-0" />
+      
       <div className="relative mx-auto flex min-h-screen w-full max-w-7xl items-center px-5 py-10 sm:px-8">
-        <section className="grid w-full gap-14 lg:grid-cols-[1.15fr_.85fr] lg:items-center">
+        <section className="grid w-full gap-8 lg:grid-cols-[1.15fr_.85fr] lg:items-center">
           <div className="max-w-2xl">
-            <div className="mb-10 flex items-center gap-3 font-display text-lg font-semibold tracking-normal">
+            <div className="mb-6 flex items-center gap-3 font-display text-lg font-semibold tracking-normal">
               <span className="grid size-10 place-items-center overflow-hidden rounded-md border border-border bg-secondary"><img src={dogeMark} alt="Doge" className="h-full w-full object-contain" /></span>
               The Doge Foundation
             </div>
-            <p className="mb-5 font-mono text-xs uppercase text-primary">open directory / v2.0</p>
-            <h1 className="max-w-xl font-display text-5xl font-semibold leading-[1.02] tracking-normal sm:text-7xl">
-              The open toolkit for curious minds.
+            <p className="mb-5 font-mono text-xs uppercase text-primary">open directory / v3.0</p>
+            <h1 className="max-w-xl font-display text-4xl font-extrabold leading-[1.02] tracking-normal sm:text-6xl">
+              The Doge Foundation
             </h1>
             <p className="mt-6 max-w-lg text-base leading-7 text-muted-foreground sm:text-lg">
               Explore the complete collection of proxies, bookmarklets, game routes, and useful tools.
@@ -67,7 +67,7 @@ export function AuthScreen() {
             </div>
           </div>
 
-          <div className="w-full max-w-md justify-self-end rounded-lg border border-border bg-card/80 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
+          <div className="w-full max-w-md justify-self-end rounded-lg border border-border v3-surface bg-card p-6 shadow-2xl backdrop-blur-xl sm:p-8">
             <div className="mb-7">
               <p className="font-mono text-xs text-muted-foreground">SECURE ACCESS</p>
               <h2 className="mt-2 text-2xl font-semibold">{mode === "signin" ? "Welcome back" : "Create your account"}</h2>
@@ -86,9 +86,9 @@ export function AuthScreen() {
                 {busy ? <LoaderCircle className="animate-spin" /> : <>{mode === "signin" ? "Sign in" : "Create account"}<ArrowRight /></>}
               </Button>
             </form>
-            <button className="mt-6 w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground" onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setMessage(""); }}>
+            <Button variant="ghost" className="mt-6 w-full whitespace-normal text-center text-xs text-muted-foreground transition-colors hover:text-foreground" onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setMessage(""); }}>
               {mode === "signin" ? "New here? Create an account" : "Already have an account? Sign in"}
-            </button>
+            </Button>
           </div>
         </section>
       </div>

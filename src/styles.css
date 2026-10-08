@@ -67,28 +67,32 @@
 
 :root {
   --radius: 0.5rem;
-  --background: oklch(0.65692 0.197323 339.6963);
-  --foreground: oklch(0.324533 0.007122 211.045);
+  --background: oklch(0.20 0.006 285);
+  --page-pink: oklch(0.48 0.075 345);
+  --page-purple: oklch(0.38 0.065 305);
+  --page-gray: oklch(0.29 0.015 285);
+  --page-fade: linear-gradient(to bottom, var(--page-pink) 0%, var(--page-purple) 28%, var(--page-gray) 56%, var(--background) 85%);
+  --foreground: oklch(0.9764 0.0013 286.38);
   --card: oklch(0.324533 0.007122 211.045);
   --card-foreground: oklch(0.9764 0.0013 286.38);
   --popover: var(--card);
   --popover-foreground: var(--card-foreground);
-  --primary: oklch(0.324533 0.007122 211.045);
+  --primary: oklch(0.58 0.10 330);
   --primary-foreground: oklch(0.9764 0.0013 286.38);
   --secondary: oklch(0.9764 0.0013 286.38 / 18%);
   --secondary-foreground: var(--foreground);
   --muted: oklch(0.9764 0.0013 286.38 / 12%);
-  --muted-foreground: oklch(0.324533 0.007122 211.045 / 85%);
-  --accent: oklch(0.324533 0.007122 211.045);
+  --muted-foreground: oklch(0.9764 0.0013 286.38 / 74%);
+  --accent: var(--brand-pink);
   --accent-foreground: var(--primary-foreground);
   --destructive: oklch(0.76 0.13 20);
   --destructive-foreground: var(--card);
-  --border: oklch(0.324533 0.007122 211.045 / 18%);
-  --input: oklch(0.324533 0.007122 211.045 / 30%);
+  --border: oklch(0.9764 0.0013 286.38 / 15%);
+  --input: oklch(0.9764 0.0013 286.38 / 22%);
   --ring: oklch(0.9764 0.0013 286.38);
   --success: oklch(0.79 0.12 160);
-  --brand-pink: oklch(0.65692 0.197323 339.6963);
-  --brand-deep: oklch(0.528812 0.179193 336.519);
+  --brand-pink: oklch(0.68 0.095 330);
+  --brand-deep: oklch(0.48 0.075 305);
   --shadow-card: 0 4px 0 oklch(0.324533 0.007122 211.045 / 18%);
   --chart-1: var(--brand-pink);
   --chart-2: var(--success);
@@ -106,7 +110,7 @@
 }
 
 .dark {
-  --background: oklch(0.25 0.0076 211.04);
+  --background: oklch(0.20 0.006 285);
   --foreground: oklch(0.9764 0.0013 286.38);
   --primary: var(--brand-pink);
   --primary-foreground: var(--card-foreground);
@@ -133,6 +137,11 @@
 
 .proxy-tile { box-shadow: var(--shadow-card); transition: transform 180ms ease, border-color 180ms ease; }
 .proxy-tile:hover { transform: translateY(-3px); border-color: var(--brand-pink); }
+.min-h-screen.bg-background {
+  background-image: var(--page-fade);
+  background-size: 100% max(100vh, 1100px);
+  background-repeat: no-repeat;
+}
 h1, h2, h3 { font-family: var(--font-display); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
@@ -144,8 +153,8 @@ h1, h2, h3 { font-family: var(--font-display); }
   }
 
   body {
-    background: var(--background);
-    background-attachment: fixed;
+    background: var(--page-fade) no-repeat var(--background);
+    background-size: 100% max(100vh, 1100px);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     letter-spacing: 0;

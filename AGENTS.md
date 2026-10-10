@@ -14,3 +14,4 @@
 - Keep large user-supplied bookmarklets as inert text imported with `?raw`; the app copies them without running third-party code in its own origin.
 
 - Scope framed charcoal surfaces with `v3-surface` in the global stylesheet; local semantic tokens keep text and controls legible against the contrasting page field in both themes.
+- Keep proxy reactions in account-scoped browser storage and share them through the directory's parent state; Home and Proxy must show identical selections without changing backend permissions.

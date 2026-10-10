@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
   Bookmark, Check, Code2, Copy,
   ExternalLink, Flame, Gamepad2, House, LogOut, Mail, Moon, Network,
   Orbit, Pencil, Search, Send, ShieldCheck, Sun,
-  TrendingUp, UserRound, X,
+  ThumbsUp, ThumbsDown, TrendingUp, UserRound, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +38,9 @@ const hacks: HackEntry[] = [
 ];
 
 const STORAGE_PREFIX = "doge-foundation";
+type ProxyPreference = { vote: "like" | "dislike" | null; saved: boolean };
+type ProxyControls = { preferences: Record<string, ProxyPreference>; update: (id: string, action: "like" | "dislike" | "save") => void };
+const emptyPreference: ProxyPreference = { vote: null, saved: false };
 
 export function DogeFoundationApp() {
   const navigate = useNavigate();
@@ -48,6 +51,33 @@ export function DogeFoundationApp() {
   const [draftName, setDraftName] = useState("");
   const [saved, setSaved] = useState(false);
   const [onboarding, setOnboarding] = useState(false);
+  const [preferences, setPreferences] = useState<Record<string, ProxyPreference>>({});
+  const [preferencesAccount, setPreferencesAccount] = useState("");
+  useEffect(() => {
+    if (!profile.id) return;
+    let restored: Record<string, ProxyPreference> = {};
+    try {
+      const parsed: unknown = JSON.parse(localStorage.getItem(`${STORAGE_PREFIX}-proxy-preferences-${profile.id}`) ?? "{}");
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        for (const [id, value] of Object.entries(parsed)) {
+          if (value && typeof value === "object" && "vote" in value && "saved" in value &&
+            (value.vote === null || value.vote === "like" || value.vote === "dislike") && typeof value.saved === "boolean") {
+            restored[id] = { vote: value.vote, saved: value.saved };
+          }
+        }
+      }
+    } catch { /* Unavailable or invalid browser storage starts a fresh collection. */ }
+    setPreferences(restored);
+    setPreferencesAccount(profile.id);
+  }, [profile.id]);
+  useEffect(() => {
+    if (!preferencesAccount || preferencesAccount !== profile.id) return;
+    try { localStorage.setItem(`${STORAGE_PREFIX}-proxy-preferences-${preferencesAccount}`, JSON.stringify(preferences)); } catch { /* Keep controls usable when storage is unavailable. */ }
+  }, [preferences, preferencesAccount, profile.id]);
+  const controls: ProxyControls = { preferences, update: (id, action) => setPreferences((current) => {
+    const previous = current[id] ?? emptyPreference;
+    return { ...current, [id]: action === "save" ? { ...previous, saved: !previous.saved } : { ...previous, vote: previous.vote === action ? null : action } };
+  }) };
 
   useEffect(() => {
     const storedTheme = localStorage.getItem(`${STORAGE_PREFIX}-theme`) === "dark" ? "dark" : "light";
@@ -102,9 +132,9 @@ export function DogeFoundationApp() {
       </div>
     </header>
     <main className="mx-auto max-w-7xl px-4 py-7 sm:px-6 sm:py-9">
-       {tab === "Home" && <HomePanel name={profile.display_name} openHacks={() => setTab("Hacks")} openProxies={() => setTab("Proxy")} />}
+       {tab === "Home" && <HomePanel controls={controls} name={profile.display_name} openHacks={() => setTab("Hacks")} openProxies={() => setTab("Proxy")} />}
       {tab === "Hacks" && <HacksPanel />}
-      {tab === "Proxy" && <ProxyPanel />}
+      {tab === "Proxy" && <ProxyPanel controls={controls} />}
       {tab === "More" && <MorePanel />}
       {tab === "Contact" && <ContactPanel userId={profile.id} />}
       {tab === "You" && <YouPanel profile={profile} draftName={draftName} setDraftName={setDraftName} saveProfile={saveProfile} saved={saved} theme={theme} setTheme={setTheme} cloak={cloak} setCloak={setCloakValue} signOut={signOut} />}
@@ -113,7 +143,7 @@ export function DogeFoundationApp() {
   </div>;
 }
 
-function HomePanel({ name, openHacks, openProxies }: { name: string; openHacks: () => void; openProxies: () => void }) {
+function HomePanel({ controls, name, openHacks, openProxies }: { controls: ProxyControls; name: string; openHacks: () => void; openProxies: () => void }) {
   const [selectedProxy, setSelectedProxy] = useState<ProxyEntry | null>(null);
   const favorites = proxyLibrary.filter((proxy) => ["Space", "Truffled", "Selenite", "Daydream X"].includes(proxy.name));
   return <div className="animate-in fade-in duration-500">
@@ -121,7 +151,7 @@ function HomePanel({ name, openHacks, openProxies }: { name: string; openHacks: 
       <div><p className="section-label">THE DOGE FOUNDATION / V3.0</p><h1 className="page-title">Your next discovery.</h1><p className="page-copy">Welcome{name ? `, ${name}` : ""}.</p><div className="mt-5 flex flex-wrap gap-2"><Button onClick={openProxies}><Network />Proxy directory</Button><Button variant="outline" onClick={openHacks}><Code2 />Hacks</Button></div></div>
       <img src={dogeMark} alt="Doge mascot" className="hidden size-40 object-contain sm:block" />
     </section>
-    <section className="mt-7"><div className="mb-4 flex items-center justify-between gap-3"><h2 className="text-xl font-bold">Community favorites</h2><Button variant="ghost" size="sm" onClick={openProxies}>View all<ExternalLink /></Button></div><div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{favorites.map((proxy) => <ProxyCard key={proxy.id} proxy={proxy} onSeeLinks={() => setSelectedProxy(proxy)} />)}</div></section>
+    <section className="mt-7"><div className="mb-4 flex items-center justify-between gap-3"><h2 className="text-xl font-bold">Community favorites</h2><Button variant="ghost" size="sm" onClick={openProxies}>View all<ExternalLink /></Button></div><div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{favorites.map((proxy) => <ProxyCard controls={controls} key={proxy.id} proxy={proxy} onLaunch={() => setSelectedProxy(proxy)} />)}</div></section>
     <section className="mt-9 border-t border-border pt-6"><div className="flex items-center justify-between gap-4"><h2 className="text-xl font-bold">Trending hacks</h2><Button variant="ghost" size="sm" onClick={openHacks}>Browse hacks<ExternalLink /></Button></div><div className="mt-4 grid gap-3 sm:grid-cols-3">{hacks.filter((hack) => ["autoclicker", "history", "draw"].includes(hack.id)).map((hack) => <Button key={hack.id} variant="outline" onClick={openHacks} className="v3-surface h-20 justify-start bg-card px-4 text-left"><Code2 /><span className="whitespace-normal">{hack.name}</span></Button>)}</div></section>
     {selectedProxy && <ProxyLinksPanel proxy={selectedProxy} close={() => setSelectedProxy(null)} />}
   </div>;
@@ -136,20 +166,57 @@ function HackCard({ hack }: { hack: HackEntry }) {
    return <article className="rounded-lg border border-border v3-surface bg-card p-6"><div className="flex items-start gap-4">{hack.image ? <img src={hack.image} alt={`${hack.name} icon`} className="size-12 shrink-0 rounded-md border border-border bg-card object-contain p-1" /> : <span className="grid size-12 shrink-0 place-items-center rounded-md border border-border bg-secondary">{hack.code ? <Code2 className="size-5 text-primary" /> : <Pencil className="size-5 text-primary" />}</span>}<div><h2 className="font-semibold">{hack.name}</h2><p className="mt-1 text-sm leading-relaxed text-muted-foreground">{hack.description}</p></div></div><div className="mt-5 border-t border-border pt-5"><p className="font-mono text-[10px] uppercase text-muted-foreground">Instructions</p><ol className="mt-3 space-y-2 text-sm text-muted-foreground">{hack.steps.map((step, index) => <li key={step} className="flex gap-3"><span className="font-mono text-xs text-primary">{String(index + 1).padStart(2, "0")}</span>{step}</li>)}</ol>{hack.code && <div className="mt-5"><div className="mb-2 flex items-center justify-between"><span className="font-mono text-[10px] uppercase text-muted-foreground">Script</span><Button size="sm" variant="outline" onClick={() => { void navigator.clipboard.writeText(hack.code ?? ""); setCopied(true); window.setTimeout(() => setCopied(false), 1600); }}>{copied ? <Check /> : <Copy />}{copied ? "Copied" : "Copy code"}</Button></div><pre className="scrollbar-none max-h-28 overflow-auto rounded-md border border-border bg-secondary/60 p-3 font-mono text-[11px] text-muted-foreground"><code>{hack.code.length > 1000 ? `${hack.code.slice(0, 1000)}…` : hack.code}</code></pre></div>}{hack.url && <a href={hack.url} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"><ExternalLink className="size-4" />Open source</a>}</div></article>;
 }
 
-function ProxyPanel() {
+function ProxyPanel({ controls }: { controls: ProxyControls }) {
+  const [savedOnly, setSavedOnly] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedProxy, setSelectedProxy] = useState<ProxyEntry | null>(null);
-  const filtered = proxyLibrary.filter((proxy) => `${proxy.name} ${proxy.description}`.toLowerCase().includes(query.toLowerCase()));
-  return <section className="animate-in fade-in duration-500"><div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="section-label">OPEN NETWORK</p><h1 className="page-title">Proxy directory</h1><p className="page-copy">{proxyLibrary.length} proxies · {quickLinks.length} quick links</p></div><div className="relative w-full sm:max-w-xs"><Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Search directory" placeholder="Search directory" className="pl-9" /></div></div><div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{filtered.map((proxy) => <ProxyCard key={proxy.id} proxy={proxy} onSeeLinks={() => setSelectedProxy(proxy)} />)}</div>{filtered.length === 0 && <div className="mt-10 rounded-lg border border-dashed border-border p-12 text-center text-sm text-muted-foreground">No proxy matches that search.</div>}<div className="mt-14 border-t border-border pt-10"><p className="section-label">FAST ACCESS</p><h2 className="mt-1 text-xl font-semibold">Quick links</h2><div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">{quickLinks.map((link) => <div key={link.name} className="flex items-center justify-between gap-3 rounded-md border border-border v3-surface bg-card px-4 py-3"><span className="min-w-0 truncate text-sm font-medium">{link.name}</span><Button asChild size="sm" variant="outline"><a href={link.url} target="_blank" rel="noopener noreferrer">Launch<ExternalLink /></a></Button></div>)}</div></div>{selectedProxy && <ProxyLinksPanel proxy={selectedProxy} close={() => setSelectedProxy(null)} />}</section>;
+  const filtered = proxyLibrary.filter((proxy) => (!savedOnly || controls.preferences[proxy.id]?.saved) && `${proxy.name} ${proxy.description}`.toLowerCase().includes(query.toLowerCase()));
+  return <section className="animate-in fade-in duration-500"><div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="section-label">OPEN NETWORK</p><h1 className="page-title">Proxy directory</h1><p className="page-copy">{proxyLibrary.length} proxies · {quickLinks.length} quick links</p></div><div className="relative w-full sm:max-w-xs"><Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Search directory" placeholder="Search directory" className="pl-9" /></div></div><div className="mt-5 flex items-center gap-2"><Button variant={savedOnly ? "secondary" : "ghost"} size="sm" aria-pressed={savedOnly} onClick={() => setSavedOnly((value) => !value)}><Bookmark />Saved ({Object.values(controls.preferences).filter((value) => value.saved).length})</Button></div><div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{filtered.map((proxy) => <ProxyCard controls={controls} key={proxy.id} proxy={proxy} onLaunch={() => setSelectedProxy(proxy)} />)}</div>{filtered.length === 0 && <div className="mt-10 rounded-lg border border-dashed border-border p-12 text-center text-sm text-muted-foreground">{savedOnly ? "No saved proxies match. Save a proxy to add it here." : "No proxy matches that search."}</div>}<div className="mt-14 border-t border-border pt-10"><p className="section-label">FAST ACCESS</p><h2 className="mt-1 text-xl font-semibold">Quick links</h2><div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">{quickLinks.map((link) => <div key={link.name} className="flex items-center justify-between gap-3 rounded-md border border-border v3-surface bg-card px-4 py-3"><span className="min-w-0 truncate text-sm font-medium">{link.name}</span><LaunchLink url={link.url} label={link.name} /></div>)}</div></div>{selectedProxy && <ProxyLinksPanel proxy={selectedProxy} close={() => setSelectedProxy(null)} />}</section>;
 }
 
-function ProxyCard({ proxy, onSeeLinks }: { proxy: ProxyEntry; onSeeLinks: () => void }) {
+function ProxyCard({ proxy, onLaunch, controls }: { proxy: ProxyEntry; onLaunch: () => void; controls: ProxyControls }) {
+  const preference = controls.preferences[proxy.id] ?? emptyPreference;
   const tone = proxy.status === "working" ? "border-success/30 bg-success/10 text-success" : proxy.status === "partial" ? "border-primary/30 bg-primary/10 text-primary" : "border-destructive/30 bg-destructive/10 text-destructive";
-   return <article className="proxy-tile v3-surface flex min-w-0 flex-col overflow-hidden rounded-lg border border-border bg-card">{proxy.banner && <img src={proxy.banner} alt={`${proxy.name} website preview`} loading="lazy" className="aspect-video w-full border-b border-border bg-secondary object-cover object-top" />}<div className="flex flex-1 flex-col p-3 sm:p-4"><div className="flex flex-col items-start gap-2"><h2 className="min-h-10 text-sm font-bold leading-5 sm:text-base">{proxy.name}</h2><span className={`rounded-full border px-2 py-0.5 font-mono text-[10px] ${tone}`}>{proxy.status === "working" ? "working" : proxy.status === "partial" ? "partly working" : "proxy down"}</span></div><p className="mt-2 min-h-14 flex-1 text-xs leading-5 text-muted-foreground line-clamp-3">{proxy.description}</p><Button className="mt-4 h-9 w-full text-xs" variant="outline" onClick={onSeeLinks}>See links</Button></div></article>;
+   return <article className="proxy-tile v3-surface flex min-w-0 flex-col overflow-hidden rounded-lg border border-border bg-card">{proxy.banner && <img src={proxy.banner} alt={`${proxy.name} website preview`} loading="lazy" className="aspect-video w-full border-b border-border bg-secondary object-cover object-top" />}<div className="flex flex-1 flex-col p-3 sm:p-4"><div className="flex flex-col items-start gap-2"><h2 className="min-h-10 text-sm font-bold leading-5 sm:text-base">{proxy.name}</h2><span className={`rounded-full border px-2 py-0.5 font-mono text-[10px] ${tone}`}>{proxy.status === "working" ? "working" : proxy.status === "partial" ? "partly working" : "proxy down"}</span></div><p className="mt-2 min-h-14 flex-1 text-xs leading-5 text-muted-foreground line-clamp-3">{proxy.description}</p><div className="mt-3 flex items-center gap-1 border-t border-border pt-2">
+      <Button size="icon" variant="ghost" aria-label={`Like ${proxy.name}`} title="Like" aria-pressed={preference.vote === "like"} className={preference.vote === "like" ? "text-success bg-success/10" : "text-muted-foreground"} onClick={() => controls.update(proxy.id, "like")}><ThumbsUp /></Button>
+      <Button size="icon" variant="ghost" aria-label={`Dislike ${proxy.name}`} title="Dislike" aria-pressed={preference.vote === "dislike"} className={preference.vote === "dislike" ? "text-destructive bg-destructive/10" : "text-muted-foreground"} onClick={() => controls.update(proxy.id, "dislike")}><ThumbsDown /></Button>
+      <Button size="icon" variant="ghost" aria-label={`Save ${proxy.name}`} title={preference.saved ? "Unsave" : "Save"} aria-pressed={preference.saved} className={`ml-auto ${preference.saved ? "text-primary bg-primary/10" : "text-muted-foreground"}`} onClick={() => controls.update(proxy.id, "save")}><Bookmark className={preference.saved ? "fill-current" : ""} /></Button>
+    </div><Button className="mt-2 h-9 w-full text-xs" variant="launch" onClick={onLaunch}>Launch<ExternalLink /></Button></div></article>;
+}
+
+function LaunchLink({ url, label }: { url: string; label: string }) {
+  return <span className="group relative inline-flex shrink-0">
+    <Button asChild variant="launch" size="sm"><a href={url} target="_blank" rel="noopener noreferrer" aria-label={`Launch ${label}`} title={url}>Launch<ExternalLink /></a></Button>
+    <span role="tooltip" className="pointer-events-none absolute right-0 bottom-full z-10 mb-2 hidden w-max max-w-[min(22rem,75vw)] break-all rounded-md border border-border bg-popover p-3 font-mono text-xs text-popover-foreground shadow-lg group-hover:block group-focus-within:block">{url}</span>
+  </span>;
 }
 
 function ProxyLinksPanel({ proxy, close }: { proxy: ProxyEntry; close: () => void }) {
-  return <div className="fixed inset-0 z-50 grid place-items-center bg-background/85 p-4 backdrop-blur-md" role="dialog" aria-modal="true" aria-labelledby="proxy-links-title" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}><div className="v3-surface max-h-[85vh] w-full max-w-2xl overflow-auto rounded-lg border border-border bg-card shadow-2xl"><div className="sticky top-0 flex items-start justify-between gap-4 border-b border-border bg-card/95 p-5 backdrop-blur"><div><p className="section-label">AVAILABLE ROUTES</p><h2 id="proxy-links-title" className="mt-1 text-xl font-semibold">{proxy.name}</h2></div><Button size="icon" variant="ghost" aria-label="Close links" title="Close" onClick={close}><X /></Button></div><ul className="divide-y divide-border p-5 pt-1">{proxy.links.map((link, index) => <li key={`${link.url}-${index}`} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"><div className="min-w-0"><p className="text-sm font-medium">{link.label}</p><p className="mt-1 text-xs text-muted-foreground">{link.note}</p><p className="mt-1 truncate font-mono text-[10px] text-muted-foreground">{link.url}</p></div><Button asChild size="sm"><a href={link.url} target="_blank" rel="noopener noreferrer">Launch<ExternalLink /></a></Button></li>)}</ul></div></div>;
+  const closeRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    const previous = document.activeElement;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    closeRef.current?.focus();
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") close();
+      if (event.key !== "Tab") return;
+      const dialog = closeRef.current?.closest('[role="dialog"]');
+      const targets = dialog?.querySelectorAll<HTMLElement>('button, a[href]');
+      const first = targets?.[0];
+      const last = targets?.[targets.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => { document.body.style.overflow = overflow; document.removeEventListener("keydown", handleKey); if (previous instanceof HTMLElement) previous.focus(); };
+  }, [close]);
+  return <div className="fixed inset-0 z-50 grid place-items-center bg-background/85 p-4 backdrop-blur-md" role="dialog" aria-modal="true" aria-labelledby="proxy-links-title" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
+    <div className="v3-surface max-h-[85vh] w-full max-w-2xl overflow-auto rounded-lg border border-border bg-card shadow-2xl">
+      <div className="sticky top-0 z-20 flex items-start justify-between gap-4 border-b border-border bg-card/95 p-5 backdrop-blur"><div><p className="section-label">AVAILABLE LINKS</p><h2 id="proxy-links-title" className="mt-1 text-xl font-semibold">{proxy.name}</h2></div><Button ref={closeRef} size="icon" variant="ghost" aria-label="Close links" title="Close" onClick={close}><X /></Button></div>
+      <ul className="divide-y divide-border px-5 pb-5 pt-12">{proxy.links.map((link, index) => <li key={`${link.url}-${index}`} className="flex items-center justify-between gap-3 py-4"><div className="min-w-0"><p className="text-sm font-medium">{link.label}</p><p className="mt-1 text-xs text-muted-foreground">{link.note}</p></div><LaunchLink url={link.url} label={`${proxy.name} ${link.label}`} /></li>)}</ul>
+    </div>
+  </div>;
 }
 
 function MorePanel() {

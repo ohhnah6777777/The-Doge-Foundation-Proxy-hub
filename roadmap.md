@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Add persistent proxy reactions and saved filter
+- [ ] Add bright Launch controls and URL previews; verify interactions
+
 - [x] Create and install The Doge Foundation brand image and favicon
 - [x] Rebuild the app without ranks, XP gating, developer mode, or admin panel
 - [x] Add all supplied proxies and quick links

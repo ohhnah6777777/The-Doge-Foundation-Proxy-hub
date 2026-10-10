@@ -63,6 +63,8 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-success: var(--success);
+  --color-launch: var(--launch);
+  --color-launch-foreground: var(--launch-foreground);
 }
 
 :root {
@@ -91,6 +93,8 @@
   --input: oklch(0.9764 0.0013 286.38 / 22%);
   --ring: oklch(0.9764 0.0013 286.38);
   --success: oklch(0.79 0.12 160);
+  --launch: oklch(0.85 0.15 155);
+  --launch-foreground: oklch(0.22 0.035 155);
   --brand-pink: oklch(0.68 0.095 330);
   --brand-deep: oklch(0.48 0.075 305);
   --shadow-card: 0 4px 0 oklch(0.324533 0.007122 211.045 / 18%);

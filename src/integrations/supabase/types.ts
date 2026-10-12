@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      custom_proxies: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          links: string[]
+          name: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          id?: string
+          links?: string[]
+          name: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          links?: string[]
+          name?: string
+          status?: string
+        }
+        Relationships: []
+      }
       owner_messages: {
         Row: {
           body: string
@@ -65,6 +92,36 @@ export type Database = {
           onboarded?: boolean
           persona?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      proxy_requests: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          note: string
+          status: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          note?: string
+          status?: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          note?: string
+          status?: string
+          url?: string
+          user_id?: string
         }
         Relationships: []
       }

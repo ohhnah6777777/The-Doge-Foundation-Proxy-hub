@@ -11,7 +11,7 @@
 
 - Keep proxy directory records and optional CDN banner references in `src/lib/proxy-data.ts`; this centralizes entry order, links, and imagery without fetching third-party logos at runtime.
 - Keep the authenticated directory and its panels in `src/components/app/doge-foundation-app.tsx`; shared account state and panel switching stay together.
-- Keep large user-supplied bookmarklets as inert text imported with `?raw`; the app copies them without running third-party code in its own origin.
 
 - Scope framed charcoal surfaces with `v3-surface` in the global stylesheet; local semantic tokens keep text and controls legible against the contrasting page field in both themes.
-- Keep proxy reactions in account-scoped browser storage and share them through the directory's parent state; Home and Proxy must show identical selections without changing backend permissions.
+- Keep proxy reactions in account-scoped browser storage and share them through the directory's parent state; Proxy and You must show identical selections without changing backend permissions.
+- Admin access is granted server-side by comparing the passcode to the ADMIN_ACCESS_CODE secret and writing user_roles; admin writes rely on has_role RLS, never client checks.

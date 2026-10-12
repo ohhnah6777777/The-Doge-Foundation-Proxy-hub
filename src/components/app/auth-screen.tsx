@@ -53,11 +53,11 @@ export function AuthScreen() {
           <div className="max-w-2xl">
             <div className="mb-6 flex items-center gap-3 font-display text-lg font-semibold tracking-normal">
               <span className="grid size-10 place-items-center overflow-hidden rounded-md border border-border bg-secondary"><img src={dogeMark} alt="Doge" className="h-full w-full object-contain" /></span>
-              The Doge Foundation
+              Proxy Hub
             </div>
             <p className="mb-5 font-mono text-xs uppercase text-primary">open directory / v3.0</p>
             <h1 className="max-w-xl font-display text-4xl font-extrabold leading-[1.02] tracking-normal sm:text-6xl">
-              The Doge Foundation
+              Proxy Hub
             </h1>
             <p className="mt-6 max-w-lg text-base leading-7 text-muted-foreground sm:text-lg">
               Explore the complete collection of proxies, bookmarklets, game routes, and useful tools.

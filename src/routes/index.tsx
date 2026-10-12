@@ -8,10 +8,10 @@ export const Route = createFileRoute("/")({
   },
   head: () => ({
     meta: [
-      { title: "The Doge Foundation — open toolkit" },
-       { name: "description", content: "Explore an open directory of proxies, bookmarklets, games, and useful tools." },
-      { property: "og:title", content: "The Doge Foundation — open toolkit" },
-       { property: "og:description", content: "Explore an open directory of proxies, bookmarklets, games, and useful tools." },
+      { title: "Proxy Hub — open toolkit" },
+       { name: "description", content: "Explore an open directory of proxies with alternate links and quick launches." },
+      { property: "og:title", content: "Proxy Hub — open toolkit" },
+       { property: "og:description", content: "Explore an open directory of proxies with alternate links and quick launches." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

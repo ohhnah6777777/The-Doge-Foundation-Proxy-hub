@@ -3,10 +3,10 @@ import { DogeFoundationApp } from "@/components/app/doge-foundation-app";
 
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({ meta: [
-    { title: "Directory — The Doge Foundation" },
-     { name: "description", content: "Browse open proxies, bookmarklets, game routes, and personal tools." },
-    { property: "og:title", content: "Directory — The Doge Foundation" },
-     { property: "og:description", content: "Browse open proxies, bookmarklets, game routes, and personal tools." },
+    { title: "Directory — Proxy Hub" },
+     { name: "description", content: "Browse proxies, alternate links, and saved favorites." },
+    { property: "og:title", content: "Directory — Proxy Hub" },
+     { property: "og:description", content: "Browse proxies, alternate links, and saved favorites." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },
   ] }),

@@ -18,3 +18,6 @@
 - [x] Add Launch buttons to proxy routes and quick links
 - [x] Add the supplied Blooket bookmarklet as copy-only text
 - [x] Apply the selected v3 visual direction and verify the website
+
+- [x] Rebrand to Proxy Hub; Proxy + You only; remove hacks
+- [x] Vote counters, dislike ordering, proxy requests, admin developer panel

@@ -140,14 +140,18 @@ function BrandName() {
   return <span className="rounded-md border border-primary/50 bg-primary/15 px-2 py-0.5">Proxy <span className="rounded bg-highlight px-1 text-highlight-foreground">Hub</span></span>;
 }
 
-function sortByDislikes(list: ProxyEntry[], prefs: Record<string, ProxyPreference>) {
-  const score = (p: ProxyEntry) => baseline(p.id, 7) + (prefs[p.id]?.vote === "dislike" ? 1 : 0);
-  return list.map((p, i) => ({ p, i })).sort((x, y) => score(x.p) - score(y.p) || x.i - y.i).map((x) => x.p);
+function sortByNetLikes(list: ProxyEntry[], prefs: Record<string, ProxyPreference>) {
+  const net = (p: ProxyEntry) => {
+    const likes = baseline(p.id, 3) + (prefs[p.id]?.vote === "like" ? 1 : 0);
+    const dislikes = baseline(p.id, 7) + (prefs[p.id]?.vote === "dislike" ? 1 : 0);
+    return Math.max(0, likes - dislikes);
+  };
+  return list.map((p, i) => ({ p, i })).sort((x, y) => net(y.p) - net(x.p) || x.i - y.i).map((x) => x.p);
 }
 
 function ProxyPanel({ controls, custom, userId }: { controls: ProxyControls; custom: ProxyEntry[]; userId: string }) {
   const [requesting, setRequesting] = useState(false);
-  const all = sortByDislikes([...proxyLibrary, ...custom], controls.preferences);
+  const all = sortByNetLikes([...proxyLibrary, ...custom], controls.preferences);
   const [savedOnly, setSavedOnly] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedProxy, setSelectedProxy] = useState<ProxyEntry | null>(null);

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { lovable } from "@/integrations/lovable";
 import { supabase } from "@/integrations/supabase/client";
-import dogeMark from "@/assets/doge-foundation-mark.png";
+import dogeMark from "@/assets/proxy-hub-mark.png";
 
 export function AuthScreen() {
   const navigate = useNavigate();
@@ -52,7 +52,7 @@ export function AuthScreen() {
         <section className="grid w-full gap-8 lg:grid-cols-[1.15fr_.85fr] lg:items-center">
           <div className="max-w-2xl">
             <div className="mb-6 flex items-center gap-3 font-display text-lg font-semibold tracking-normal">
-              <span className="grid size-10 place-items-center overflow-hidden rounded-md border border-border bg-secondary"><img src={dogeMark} alt="Doge" className="h-full w-full object-contain" /></span>
+              <span className="grid size-10 place-items-center overflow-hidden rounded-md border border-border bg-secondary"><img src={dogeMark} alt="Proxy Hub" className="h-full w-full object-contain" /></span>
               Proxy Hub
             </div>
             <p className="mb-5 font-mono text-xs uppercase text-primary">open directory / v3.0</p>

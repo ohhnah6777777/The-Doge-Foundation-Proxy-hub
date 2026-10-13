@@ -151,7 +151,7 @@ function sortByNetLikes(list: ProxyEntry[], prefs: Record<string, ProxyPreferenc
 
 function ProxyPanel({ controls, custom, userId }: { controls: ProxyControls; custom: ProxyEntry[]; userId: string }) {
   const [requesting, setRequesting] = useState(false);
-  const all = sortByDislikes([...proxyLibrary, ...custom], controls.preferences);
+  const all = sortByNetLikes([...proxyLibrary, ...custom], controls.preferences);
   const [savedOnly, setSavedOnly] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedProxy, setSelectedProxy] = useState<ProxyEntry | null>(null);

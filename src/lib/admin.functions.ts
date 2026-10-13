@@ -10,9 +10,9 @@ function matches(input: string, expected: string) {
 
 export const claimAdmin = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { code: string }) => ({ code: String(data.code ?? "").slice(0, 200) }))
+  .inputValidator((data: { code: string }) => ({ code: String(data.code ?? "").trim().slice(0, 200) }))
   .handler(async ({ data, context }) => {
-    const expected = process.env["ADMIN_ACCESS_CODE"];
+    const expected = process.env["ADMIN_PASSCODE"];
     if (!expected || !matches(data.code, expected)) return { ok: false as const };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.from("user_roles").upsert({ user_id: context.userId, role: "admin" }, { onConflict: "user_id,role" });
